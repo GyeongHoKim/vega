@@ -2,7 +2,7 @@
   "name": "@gyeonghokim/vega",
   "private": "false",
   "version": "0.0.0-development",
-  "description": "Lightweight Video Player",
+  "description": "WebCodecs-based Video Player with Custom Frame Processing",
   "author": "GyeongHo Kim",
   "license": "MIT",
   "repository": {
@@ -20,14 +20,14 @@
   },
   "homepage": "https://github.com/GyeongHoKim/vega#readme",
   "type": "module",
-  "main": "./dist/video-renderer.umd.cjs",
-  "module": "./dist/video-renderer.js",
+  "main": "./dist/vega.umd.cjs",
+  "module": "./dist/vega.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/video-renderer.js",
-      "require": "./dist/video-renderer.umd.cjs"
+      "import": "./dist/vega.js",
+      "require": "./dist/vega.umd.cjs"
     }
   },
   "files": [
@@ -43,6 +43,9 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "prepare": "husky"
   },
+  "dependencies": {
+    "mp4box": "^0.5.4"
+  },
   "devDependencies": {
     "@biomejs/biome": "2.3.14",
     "@commitlint/cli": "20.4.1",
@@ -57,6 +60,6 @@
     "vitest": "4.0.18"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   }
 }
