@@ -2,7 +2,16 @@
 
 See more. See better. See Vega
 
-Lightweight library that renders decoded **VideoFrame** (WebCodecs API) to HTML Canvas. Three backends: **2D**, **WebGL**, and **WebGPU**.
+A WebCodecs-based MP4 video player with **custom VideoFrame processing** support. Apply real-time effects like fisheye undistortion, super resolution, or any custom image processing while the player handles decoding, synchronization, and rendering.
+
+## Features
+
+- **WebCodecs API**: Hardware-accelerated video decoding
+- **Custom Frame Processing**: Inject your own VideoFrame adapter for real-time effects
+- **Multiple Render Backends**: Canvas 2D, WebGL, and WebGPU
+- **Web Worker Architecture**: Demuxing and decoding run in background threads
+- **Audio Support**: WebAudio API with AudioWorklet (coming soon)
+- **TypeScript**: Full type definitions included
 
 ## Install
 
@@ -10,52 +19,185 @@ Lightweight library that renders decoded **VideoFrame** (WebCodecs API) to HTML 
 npm install @gyeonghokim/vega
 ```
 
-## Usage
+## Quick Start
 
 ```typescript
-import { VideoRendererFactory } from "@gyeonghokim/vega";
+import { createVega } from "@gyeonghokim/vega";
 
-const canvas = document.querySelector("canvas");
-const renderer = VideoRendererFactory.create(canvas, { type: "2d" });
+const canvas = document.getElementById("video-canvas") as HTMLCanvasElement;
 
-// For each decoded frame (e.g. from VideoDecoder):
-renderer.draw(videoFrame);
+// Create player
+const player = createVega({ canvas });
+
+// Load and play
+await player.load("video.mp4");
+player.play();
+
+// Controls
+player.pause();
+await player.seek(10); // Seek to 10 seconds
+player.setVolume(0.5);
 ```
 
-- **type**: `"2d"` (default) | `"webgl"` | `"webgpu"`. Use `"2d"` for broad support; WebGL/WebGPU when available for performance.
-- **Frame ownership**: The library **closes the frame** after `draw()`. Do not use the same `VideoFrame` twice.
+## Custom VideoFrame Adapter
 
-## API
+The key feature of Vega is the ability to process every video frame before rendering. Use this for effects like lens correction, color grading, upscaling, or any custom image processing.
 
-- **VideoRendererFactory.create(canvas, options?)**  
-  Returns a `VideoRenderer`. Default `type` is `"2d"`. Throws when the requested backend is unavailable.
-- **VideoRenderer.draw(frame)**  
-  Draws the `VideoFrame` to the canvas. **WebGPU** backend returns a `Promise<void>`; 2D and WebGL are synchronous. The library may close the frame after use.
+```typescript
+import { createVega, type VideoFrameAdapter } from "@gyeonghokim/vega";
 
-## Bundle size
+// Example: Grayscale filter adapter
+const grayscaleAdapter: VideoFrameAdapter = {
+  async process(frame: VideoFrame): Promise<VideoFrame> {
+    // Create an OffscreenCanvas for processing
+    const canvas = new OffscreenCanvas(frame.displayWidth, frame.displayHeight);
+    const ctx = canvas.getContext("2d")!;
+    
+    // Draw the frame
+    ctx.drawImage(frame, 0, 0);
+    
+    // Apply grayscale filter
+    ctx.filter = "grayscale(100%)";
+    ctx.drawImage(canvas, 0, 0);
+    
+    // Create new VideoFrame from processed canvas
+    const processedFrame = new VideoFrame(canvas, {
+      timestamp: frame.timestamp,
+      duration: frame.duration ?? undefined,
+    });
+    
+    // Close original frame (adapter is responsible for this)
+    frame.close();
+    
+    return processedFrame;
+  }
+};
 
-After building with `npm run build`, inspect `dist/` (e.g. `vega.js`). The library is kept small and focused on rendering only.
+// Create player with adapter
+const player = createVega({
+  canvas: document.getElementById("canvas") as HTMLCanvasElement,
+  adapter: grayscaleAdapter,
+});
 
-## Supported pixel formats
+await player.load("video.mp4");
+player.play();
 
-The library accepts any `VideoFrame` from WebCodecs. Input pixel formats (per [WebCodecs VideoPixelFormat](https://w3c.github.io/webcodecs/#enumdef-videopixelformat)) that can be rendered include:
+// You can also change the adapter at runtime
+player.setAdapter(null); // Remove adapter
+player.setAdapter(grayscaleAdapter); // Set new adapter
+```
 
-| Chroma | Format   | Description        |
-|--------|----------|--------------------|
-| 4:2:0  | I420     | Y, U, V (planar)   |
-| 4:2:0  | I420A    | Y, U, V, A         |
-| 4:2:0  | NV12     | Y, UV (interleaved)|
-| 4:2:2  | I422     | Y, U, V            |
-| 4:4:4  | I444     | Y, U, V            |
-| 4:4:4  | I444A    | Y, U, V, A         |
-| 4:4:4  | RGBA     | Red, Green, Blue, Alpha |
-| 4:4:4  | RGBX     | R, G, B, padding (opaque) |
-| 4:4:4  | BGRA     | Blue, Green, Red, Alpha |
-| 4:4:4  | BGRX     | B, G, R, padding (opaque) |
+## API Reference
 
-## Raw ↔ VideoFrame converter
+### `createVega(options: VegaOptions): Vega`
 
-For loading or saving raw binary frames (e.g. ffmpeg-decoded buffers), use the converter helpers. Buffer layout must be tightly packed per WebCodecs plane order.
+Creates a new Vega player instance.
+
+#### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `canvas` | `HTMLCanvasElement \| OffscreenCanvas` | required | Target canvas for video rendering |
+| `rendererType` | `"2d" \| "webgl" \| "webgpu"` | `"2d"` | Rendering backend |
+| `adapter` | `VideoFrameAdapter` | `undefined` | Custom frame processor |
+| `volume` | `number` | `1.0` | Initial volume (0.0 - 1.0) |
+| `loop` | `boolean` | `false` | Loop playback |
+| `autoplay` | `boolean` | `false` | Auto-start after loading |
+
+### Vega Instance Methods
+
+```typescript
+interface Vega {
+  // Loading
+  load(source: string | File | Blob): Promise<MediaInfo>;
+  
+  // Playback control
+  play(): Promise<void>;
+  pause(): void;
+  seek(time: number): Promise<void>;
+  stop(): void;
+  
+  // Properties (readonly)
+  readonly currentTime: number;
+  readonly duration: number;
+  readonly paused: boolean;
+  readonly ended: boolean;
+  readonly volume: number;
+  readonly muted: boolean;
+  readonly state: PlaybackState;
+  readonly mediaInfo: MediaInfo | null;
+  
+  // Settings
+  setVolume(volume: number): void;
+  setMuted(muted: boolean): void;
+  setAdapter(adapter: VideoFrameAdapter | null): void;
+  getAdapter(): VideoFrameAdapter | null;
+  
+  // Events
+  on(event: VegaEvent, callback: VegaEventCallback): void;
+  off(event: VegaEvent, callback: VegaEventCallback): void;
+  
+  // Cleanup
+  destroy(): void;
+}
+```
+
+### Events
+
+| Event | Description |
+|-------|-------------|
+| `play` | Playback started |
+| `pause` | Playback paused |
+| `ended` | Playback ended |
+| `seeking` | Seek operation started |
+| `seeked` | Seek operation completed |
+| `timeupdate` | Current time changed |
+| `loadedmetadata` | Media info available |
+| `canplay` | Ready to play |
+| `volumechange` | Volume or muted state changed |
+| `error` | An error occurred |
+
+### MediaInfo
+
+Returned by `load()` and available via `player.mediaInfo`:
+
+```typescript
+interface MediaInfo {
+  duration: number;
+  videoTrack?: {
+    codec: string;
+    width: number;
+    height: number;
+    frameRate: number;
+    bitrate?: number;
+  };
+  audioTrack?: {
+    codec: string;
+    sampleRate: number;
+    channelCount: number;
+    bitrate?: number;
+  };
+}
+```
+
+## VideoFrameAdapter Interface
+
+```typescript
+interface VideoFrameAdapter {
+  /**
+   * Process a VideoFrame before rendering.
+   * @param frame - The decoded VideoFrame to process
+   * @returns The processed VideoFrame (can be the same or a new one)
+   */
+  process(frame: VideoFrame): VideoFrame | Promise<VideoFrame>;
+}
+```
+
+**Important**: If your adapter creates a new VideoFrame, you must close the original frame to prevent memory leaks.
+
+## Raw Frame Utilities
+
+For working with raw video data (e.g., from ffmpeg or custom sources):
 
 ```typescript
 import {
@@ -65,36 +207,93 @@ import {
   type SupportedPixelFormat,
 } from "@gyeonghokim/vega";
 
-// Raw buffer → VideoFrame (e.g. from fetch or file)
+// Raw buffer → VideoFrame
 const raw = await (await fetch("frame_1920x1080_rgba.raw")).arrayBuffer();
 const frame = rawToVideoFrame(raw, "RGBA", 1920, 1080, { timestamp: 0 });
-renderer.draw(frame);
 
-// VideoFrame → raw buffer (same format as frame)
+// VideoFrame → raw buffer
 const buffer = await videoFrameToRaw(frame);
 
-// Byte length for a format and size
+// Calculate byte length for a format
 const bytes = getRawByteLength("I420", 1920, 1080); // 3110400
 ```
 
-Supported format names: `I420`, `I420A`, `I422`, `I444`, `I444A`, `NV12`, `RGBA`, `RGBX`, `BGRA`, `BGRX` (8-bit only).
+Supported formats: `I420`, `I420A`, `I422`, `I444`, `I444A`, `NV12`, `RGBA`, `RGBX`, `BGRA`, `BGRX`
 
-## Edge cases and supported formats
+## Browser Requirements
 
-- **Supported input**: Any `VideoFrame` from WebCodecs (e.g. from `VideoDecoder`). Canvas is resized to the frame’s display dimensions.
-- **Frame closed or invalid**: Do not call `draw()` with a frame you have already closed, or after the frame has been invalidated. The library may close the frame after drawing; do not use that frame again.
-- **Canvas detached**: If the canvas is removed from the DOM, drawing may have no visible effect until it is attached again.
-- **Backend unavailable**: `create()` throws when the requested backend (`"2d"`, `"webgl"`, or `"webgpu"`) is not available in the current environment (e.g. WebGPU not enabled). Use `"2d"` for the widest support.
+- **WebCodecs API**: Required for video decoding
+- **Web Workers**: Required for background processing
+- **SharedArrayBuffer**: Required for audio (needs COOP/COEP headers)
+
+For SharedArrayBuffer support, your server must send these headers:
+
+```
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+## Supported Formats
+
+### Container
+- MP4 (MPEG-4 Part 14)
+
+### Video Codecs
+- H.264 / AVC
+- H.265 / HEVC
+- VP8
+- VP9
+- AV1
+
+### Audio Codecs
+- AAC
+- MP3
+- Opus
 
 ## Development
 
 ```sh
 npm install
-npm run format
-npm run lint
-npm run typecheck
-npm test
-npm run build
+npm run format      # Format code
+npm run lint        # Lint code
+npm run typecheck   # TypeScript check
+npm test            # Run tests
+npm run build       # Build library
+```
+
+## Architecture
+
+```mermaid
+flowchart TB
+    subgraph MainThread["Main Thread"]
+        Vega["Vega Player"]
+        Adapter["VideoFrame Adapter<br/>(optional)"]
+        Renderer["Renderer<br/>(2D/WebGL/WebGPU)"]
+        Canvas["Canvas"]
+        AudioCtx["AudioContext"]
+        WorkerBridge["Worker Bridge"]
+        
+        Vega --> WorkerBridge
+        WorkerBridge --> Adapter
+        Adapter -->|"VideoFrame"| Renderer
+        Renderer --> Canvas
+        WorkerBridge -->|"AudioData"| AudioCtx
+    end
+    
+    subgraph MediaWorker["Media Worker"]
+        Demuxer["Demuxer<br/>(MP4Box.js)"]
+        VideoDecoder["Video Decoder<br/>(WebCodecs)"]
+        AudioDecoder["Audio Decoder<br/>(WebCodecs)"]
+        FrameBuffer["Frame Buffer"]
+        
+        Demuxer -->|"EncodedVideoChunk"| VideoDecoder
+        Demuxer -->|"EncodedAudioChunk"| AudioDecoder
+        VideoDecoder --> FrameBuffer
+    end
+    
+    WorkerBridge <-->|"postMessage"| Demuxer
+    FrameBuffer -->|"VideoFrame"| WorkerBridge
+    AudioDecoder -->|"AudioData"| WorkerBridge
 ```
 
 ## License
