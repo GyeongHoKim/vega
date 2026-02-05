@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-05
 
 ## Active Technologies
 - N/A (in-memory rendering only) (001-video-renderer)
+- TypeScript 5.9 (ES2020, NodeNext) + Vite 7, mp4box (demux), WebCodecs/Canvas/Web Audio (browser APIs) (001-webcodecs-video-adaptor)
+- N/A (in-memory decoding; source from URL/File/Blob) (001-webcodecs-video-adaptor)
 
 - TypeScript 5.9.x (latest 5.9.3) + Vite 7.3.x (library build), @biomejs/biome 2.3.x (format + lint), Vitest 4.x with browser mode (e.g. @vitest/browser-playwright), commitlint 20.x, husky 9.x, semantic-release 25.x (001-video-renderer)
 
@@ -23,6 +25,7 @@ npm test && npm run lint
 TypeScript 5.9.x (latest 5.9.3): Follow standard conventions
 
 ## Recent Changes
+- 001-webcodecs-video-adaptor: Added TypeScript 5.9 (ES2020, NodeNext) + Vite 7, mp4box (demux), WebCodecs/Canvas/Web Audio (browser APIs)
 - 001-video-renderer: Added TypeScript 5.9.x (latest 5.9.3) + Vite 7.3.x (library build), @biomejs/biome 2.3.x (format + lint), Vitest 4.x with browser mode (e.g. @vitest/browser-playwright), commitlint 20.x, husky 9.x, semantic-release 25.x
 
 - 001-video-renderer: Added TypeScript 5.9.x (latest 5.9.3) + Vite 7.3.x (library build), @biomejs/biome 2.3.x (format + lint), Vitest 4.x with browser mode (e.g. @vitest/browser-playwright), commitlint 20.x, husky 9.x, semantic-release 25.x
