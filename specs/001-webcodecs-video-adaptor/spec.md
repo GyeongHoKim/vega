@@ -78,7 +78,7 @@ As a user, I want to use the player in my own application so that I can rely on 
 
 - **Source media**: The MP4 file or stream; contains one or more video tracks and zero or more audio tracks.
 - **Video frame**: A single decoded image at a point in time; input and output of the user’s processor.
-- **Frame processor (adaptor)**: User-defined logic that takes one frame as input and returns one frame (or equivalent) for display; optional.
+- **Frame processor (adaptor)**: User-defined logic that takes one frame as input and returns one frame (or equivalent) for display; optional. In the API and codebase this is referred to as the **adapter** (e.g. `setAdapter`, `VideoFrameAdapter`).
 - **Playback session**: The state of loading, decoding, optional processing, and output for one source.
 
 ## Assumptions

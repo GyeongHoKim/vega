@@ -32,6 +32,33 @@
 
 **Alternatives considered**: (a) External URL — flaky and not reproducible. (b) Generating MP4 in test — heavy and unnecessary for current scope. (c) Skipping E2E when fixture missing — acceptable as a temporary guard, but fixture should be present in repo.
 
+**Audio verification**: The spec’s “audio is audible” is satisfied for E2E by (1) loading a source with an audio track and asserting no error (audio path exercised), and (2) optional manual check. Automated capture of “audio heard” (e.g. Web Audio capture) is out of scope for the current test suite.
+
+**Video-only / audio-only MP4**: The player plays whatever track(s) are present. For video-only sources, load+play exercises the video path only; for audio-only, the audio path only. No separate E2E is required: the current fixture has both tracks and existing E2E covers the full path. If a video-only or audio-only fixture is added later, the same tests would pass (play available track(s) only).
+
+---
+
+## 3.1. WebCodecs API in Playwright Chromium Headless
+
+**조사 요약**: E2E 테스트 환경인 Playwright Chromium headless에서 WebCodecs API 지원 여부.
+
+**WebCodecs API 자체**: 지원됨. Chromium(및 headless)에는 WebCodecs API가 포함되어 있으며, `VideoDecoder`, `VideoEncoder`, `VideoFrame`, `EncodedVideoChunk`, `AudioDecoder`, `AudioData` 등이 **헤드리스 모드에서도** 사용 가능하다. (MDN, Chrome 문서 기준; secure context·Worker 지원.)
+
+**코덱 구현체 차이**: Playwright가 설치하는 **번들 Chromium**은 라이선스 이유로 **프로프리터리 코덱(H.264, AAC 등)이 빌드에 포함되지 않은** 오픈소스 Chromium이다. 반면 Google Chrome·Microsoft Edge는 H.264 등을 포함한 공식 빌드이다.
+
+- **Playwright 기본 Chromium**: WebCodecs API는 있으나, **H.264 디코딩이 불가능할 수 있음** (빌드/플랫폼에 따라 다름).
+- **VP8 / VP9 / AV1**: 오픈소스 코덱이므로 Chromium 빌드에서 일반적으로 사용 가능.
+
+**공식 문서**: Playwright [Browsers 문서](https://playwright.dev/docs/browsers)의 "Media codecs" 절:  
+> "Chromium does not have all the codecs that Google Chrome or Microsoft Edge are bundling... If your site relies on this kind of codecs, you will also want to use the official channel."
+
+**권장 사항**:
+- 현재 E2E는 `tests/fixtures/h264.mp4`를 사용하므로, **H.264 디코딩이 필요한 테스트**는 환경에 따라 실패할 수 있다.
+- **CI/로컬에서 H.264 WebCodecs 디코딩이 꼭 필요하면**: Vitest browser provider에서 Playwright를 **Google Chrome 채널**로 띄우도록 설정하는 것을 권장한다. 예: `channel: 'chrome'` 사용 (Playwright의 `channel` 옵션). 이 경우 시스템에 설치된 Chrome을 사용하게 되며, H.264 등 프로프리터리 코덱을 쓸 수 있다.
+- **대안**: fixture를 VP9 등 오픈 코덱 MP4로 바꾸면 번들 Chromium만으로도 동일 E2E를 안정적으로 돌릴 수 있다.
+
+**정리**: WebCodecs **API**는 Playwright Chromium headless에서 지원된다. **H.264 등 특정 코덱**을 쓰는 재생 테스트는 Chromium 빌드에 따라 실패할 수 있으므로, 필요 시 `channel: 'chrome'` 또는 VP9 fixture로 정책을 정하면 된다.
+
 ---
 
 ## 4. Biome / TypeScript Ignore Audit

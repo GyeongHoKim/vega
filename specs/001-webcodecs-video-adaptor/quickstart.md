@@ -19,6 +19,8 @@
 
 ## Using the Player (Library Consumer)
 
+A minimal runnable example is in **examples/minimal.html**. After `npm run build`, serve the repo root (e.g. `npx serve .`) and open `http://localhost:3000/examples/minimal.html` to load an MP4 file and try play/pause/setAdapter.
+
 ```ts
 import { createVega } from "@gyeonghokim/vega";
 
