@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VideoRendererFactory } from "../../src/index.js";
+import { VideoRendererFactory } from "../../src/factory.js";
 
 describe("WebGPURenderer", () => {
   it("creates a renderer with type webgpu when WebGPU is available", () => {

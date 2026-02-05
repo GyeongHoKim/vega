@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { VideoRendererFactory } from "../../src/index.js";
+import { VideoRendererFactory } from "../../src/factory.js";
 
 /** External reference: ffmpeg-decode first I-frame from h264.mp4 to RGBA (1920×1080). */
 import rgbaFixtureUrl from "../fixtures/frame_1920x1080_rgba.raw?url";
