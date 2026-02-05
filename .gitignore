@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Logs and env
+*.log
+.env
+.env.*
+!.env.example
+
+# Coverage and test
+coverage/
+.nyc_output/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
+
+# Biome
+.biome-cache/
+
+# Playwright / Vitest browser
+test-results/
+playwright-report/
+playwright/.cache/
