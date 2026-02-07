@@ -25,11 +25,11 @@
 
 **Purpose**: Replace HTML example with React+TS+Vite demo scaffold; ensure demo is in quality gate scope.
 
-- [ ] T001 Remove existing HTML example and prepare examples directory: delete `examples/minimal.html` and create `examples/index.html` as the demo app entry
-- [ ] T002 [P] Add React 18 and React DOM and TypeScript types to the project (root `package.json` or examples-specific deps) per plan.md
-- [ ] T003 Create Vite config for the demo app in `examples/vite.config.ts` (or document second entry in root vite.config.ts) with build output for demo and `base` placeholder for GitHub Pages (e.g. `base: '/vega/'`)
-- [ ] T004 [P] Ensure `examples/` is included in Biome and TypeScript scope: update `biome.json` and root `tsconfig.json` (or add `examples/tsconfig.json`) so format, lint, and typecheck cover `examples/**` per research.md §6
-- [ ] T005 Create demo app entry and shell: `examples/src/main.tsx` and `examples/src/App.tsx` that render a minimal root (e.g. "Vega Demo" placeholder) and mount to `examples/index.html`
+- [x] T001 Remove existing HTML example and prepare examples directory: delete `examples/minimal.html` and create `examples/index.html` as the demo app entry
+- [x] T002 [P] Add React 18 and React DOM and TypeScript types to the project (root `package.json` or examples-specific deps) per plan.md
+- [x] T003 Create Vite config for the demo app in `examples/vite.config.ts` (or document second entry in root vite.config.ts) with build output for demo and `base` placeholder for GitHub Pages (e.g. `base: '/vega/'`)
+- [x] T004 [P] Ensure `examples/` is included in Biome and TypeScript scope: update `biome.json` and root `tsconfig.json` (or add `examples/tsconfig.json`) so format, lint, and typecheck cover `examples/**` per research.md §6
+- [x] T005 Create demo app entry and shell: `examples/src/main.tsx` and `examples/src/App.tsx` that render a minimal root (e.g. "Vega Demo" placeholder) and mount to `examples/index.html`
 
 ---
 
@@ -39,10 +39,10 @@
 
 **⚠️ CRITICAL**: No user story UI work can begin until this phase is complete.
 
-- [ ] T006 Implement hash-based routing per `specs/002-vega-demo-github-pages/contracts/demo-routing.md`: parse `window.location.hash` in `examples/src/App.tsx` (or a small router/hook) and render example selector for `#/` or empty hash and a **placeholder view** for `#/audio-video` (replaced by the real AudioVideoExample in T014)
-- [ ] T007 [P] Add sample media for the demo: copy or symlink `tests/fixtures/h264.mp4` into `examples/public/` (e.g. `examples/public/sample.mp4`) and ensure at least one sample video and one sample audio are available (one MP4 with both tracks satisfies FR-002; add separate audio file if needed) per research.md §4
-- [ ] T008 Add npm script(s) to build the library then the demo (e.g. `build:demo` or `build && cd examples && npm run build`) so the demo consumes built Vega from `dist/` per research.md §1
-- [ ] T009 [P] Create ExampleSelector page component in `examples/src/pages/ExampleSelector.tsx` that lists "Audio & Video" and navigates to `#/audio-video` on click; wire into App so `#/` shows this page
+- [x] T006 Implement hash-based routing per `specs/002-vega-demo-github-pages/contracts/demo-routing.md`: parse `window.location.hash` in `examples/src/App.tsx` (or a small router/hook) and render example selector for `#/` or empty hash and a **placeholder view** for `#/audio-video` (replaced by the real AudioVideoExample in T014)
+- [x] T007 [P] Add sample media for the demo: copy or symlink `tests/fixtures/h264.mp4` into `examples/public/` (e.g. `examples/public/sample.mp4`) and ensure at least one sample video and one sample audio are available (one MP4 with both tracks satisfies FR-002; add separate audio file if needed) per research.md §4
+- [x] T008 Add npm script(s) to build the library then the demo (e.g. `build:demo` or `build && cd examples && npm run build`) so the demo consumes built Vega from `dist/` per research.md §1
+- [x] T009 [P] Create ExampleSelector page component in `examples/src/pages/ExampleSelector.tsx` that lists "Audio & Video" and navigates to `#/audio-video` on click; wire into App so `#/` shows this page
 
 **Checkpoint**: Foundation ready — example selector works; sample media and routing contract in place; user story implementation can begin
 
@@ -56,14 +56,14 @@
 
 ### E2E for User Story 1
 
-- [ ] T010 [P] [US1] Add E2E test in `tests/integration/demo-audio-video.test.ts` (or existing integration dir): load demo app (dev server or built), navigate to `#/audio-video`, trigger play on sample media, assert playback state (e.g. state === 'playing', currentTime advances) and optionally canvas non-blank; optionally assert that playback can start within 30 seconds of page load (SC-001); use fixtures from `tests/fixtures/` per plan and research.md §5
+- [x] T010 [P] [US1] Add E2E test in `tests/integration/demo-audio-video.test.ts` (or existing integration dir): load demo app (dev server or built), navigate to `#/audio-video`, trigger play on sample media, assert playback state (e.g. state === 'playing', currentTime advances) and optionally canvas non-blank; optionally assert that playback can start within 30 seconds of page load (SC-001); use fixtures from `tests/fixtures/` per plan and research.md §5
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Create Audio & Video example page in `examples/src/pages/AudioVideoExample.tsx` that mounts a canvas and creates a Vega player instance (createVega from built lib) per `specs/001-webcodecs-video-adaptor/contracts/vega-api.md`; destroy player on unmount
-- [ ] T012 [US1] Add UI in `examples/src/pages/AudioVideoExample.tsx` (or subcomponents in `examples/src/components/`) for selecting and playing sample video and sample audio from `examples/public/` (e.g. load(sampleUrl), then play()); show clear error message if sample fails to load (FR-007). Design so a first-time visitor can start playing sample within 30 seconds of opening the page (SC-001).
-- [ ] T013 [US1] Add playback controls (play, pause, seek) to the Audio & Video example in `examples/src/components/` or inline in `examples/src/pages/AudioVideoExample.tsx`; wire to Vega instance so FR-004 is satisfied
-- [ ] T014 [US1] Wire hash route `#/audio-video` to render AudioVideoExample in `examples/src/App.tsx` (or router) per contracts/demo-routing.md
+- [x] T011 [US1] Create Audio & Video example page in `examples/src/pages/AudioVideoExample.tsx` that mounts a canvas and creates a Vega player instance (createVega from built lib) per `specs/001-webcodecs-video-adaptor/contracts/vega-api.md`; destroy player on unmount
+- [x] T012 [US1] Add UI in `examples/src/pages/AudioVideoExample.tsx` (or subcomponents in `examples/src/components/`) for selecting and playing sample video and sample audio from `examples/public/` (e.g. load(sampleUrl), then play()); show clear error message if sample fails to load (FR-007). Design so a first-time visitor can start playing sample within 30 seconds of opening the page (SC-001).
+- [x] T013 [US1] Add playback controls (play, pause, seek) to the Audio & Video example in `examples/src/components/` or inline in `examples/src/pages/AudioVideoExample.tsx`; wire to Vega instance so FR-004 is satisfied
+- [x] T014 [US1] Wire hash route `#/audio-video` to render AudioVideoExample in `examples/src/App.tsx` (or router) per contracts/demo-routing.md
 
 **Checkpoint**: User Story 1 is fully functional; visitor can play sample video and audio with controls; E2E passes
 
@@ -77,12 +77,12 @@
 
 ### E2E for User Story 2
 
-- [ ] T015 [P] [US2] Add E2E test in `tests/integration/demo-audio-video.test.ts`: load demo, go to `#/audio-video`, simulate file input with `tests/fixtures/h264.mp4`, trigger load and play, assert playback state and/or canvas; add case for invalid file type and assert error message and page still usable (FR-006)
+- [x] T015 [P] [US2] Add E2E test in `tests/integration/demo-audio-video.test.ts`: load demo, go to `#/audio-video`, simulate file input with `tests/fixtures/h264.mp4`, trigger load and play, assert playback state and/or canvas; add case for invalid file type and assert error message and page still usable (FR-006)
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Add file upload control to the Audio & Video example (e.g. in `examples/src/pages/AudioVideoExample.tsx` or `examples/src/components/UploadControl.tsx`) that accepts MP4; on file select, call player.load(file) per Vega API
-- [ ] T017 [US2] Handle load failure and invalid/unsupported file in the demo: listen for Vega `error` event and show clear user-visible message; do not leave player in undefined state (FR-006); allow user to try another file without reload
+- [x] T016 [US2] Add file upload control to the Audio & Video example (e.g. in `examples/src/pages/AudioVideoExample.tsx` or `examples/src/components/UploadControl.tsx`) that accepts MP4; on file select, call player.load(file) per Vega API
+- [x] T017 [US2] Handle load failure and invalid/unsupported file in the demo: listen for Vega `error` event and show clear user-visible message; do not leave player in undefined state (FR-006); allow user to try another file without reload
 
 **Checkpoint**: User Stories 1 and 2 both work; sample play and upload play are independently testable
 
@@ -96,9 +96,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] Create GitHub Actions workflow in `.github/workflows/deploy-pages.yml`: on push to `main` (or configured branch), checkout repo, setup Node, install deps, build library (`npm run build`), build demo with `base` set for GitHub Pages (e.g. `base: '/vega/'`), upload demo build artifact and deploy to GitHub Pages using `actions/upload-pages-artifact` and `actions/deploy-pages` (or peaceiris/actions-gh-pages) per research.md §3
-- [ ] T019 [US3] Document in `specs/002-vega-demo-github-pages/quickstart.md` (or README) how to run the demo locally and how deployment works; ensure `base` and repo name are documented for GitHub Pages URL
-- [ ] T020 [US3] **One-time manual step**: In the repository Settings → Pages, set Source to “GitHub Actions” so the workflow from T018 can deploy. The demo is then served at the stable URL (no code change; document in quickstart).
+- [x] T018 [US3] Create GitHub Actions workflow in `.github/workflows/deploy-pages.yml`: on push to `main` (or configured branch), checkout repo, setup Node, install deps, build library (`npm run build`), build demo with `base` set for GitHub Pages (e.g. `base: '/vega/'`), upload demo build artifact and deploy to GitHub Pages using `actions/upload-pages-artifact` and `actions/deploy-pages` (or peaceiris/actions-gh-pages) per research.md §3
+- [x] T019 [US3] Document in `specs/002-vega-demo-github-pages/quickstart.md` (or README) how to run the demo locally and how deployment works; ensure `base` and repo name are documented for GitHub Pages URL
+- [x] T020 [US3] **One-time manual step**: In the repository Settings → Pages, set Source to “GitHub Actions” so the workflow from T018 can deploy. The demo is then served at the stable URL (no code change; document in quickstart).
 
 **Checkpoint**: Demo is publicly accessible; visitors can open the URL and use sample + upload flows
 
@@ -108,9 +108,9 @@
 
 **Purpose**: Edge cases, quality gate, and quickstart validation.
 
-- [ ] T021 [P] Add edge-case handling in the demo: (1) when user uploads a non-MP4 or invalid file, show clear message (FR-006); (2) when sample media fails to load, show clear message (FR-007); (3) when the user uploads a very large file, allow playback within browser limits or show a brief limitation message (spec Edge Cases); (4) when the browser does not support required capabilities (e.g. WebCodecs), show a brief message and degrade gracefully (spec Edge Cases).
-- [ ] T022 Run full quality gate on repo including `examples/`: `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`; fix any failures and ensure no new biome/ts ignores in `examples/` or new tests without justification per research.md §6
-- [ ] T023 Run quickstart validation: follow `specs/002-vega-demo-github-pages/quickstart.md` (install, build library, run demo, run tests) and confirm steps work
+- [x] T021 [P] Add edge-case handling in the demo: (1) when user uploads a non-MP4 or invalid file, show clear message (FR-006); (2) when sample media fails to load, show clear message (FR-007); (3) when the user uploads a very large file, allow playback within browser limits or show a brief limitation message (spec Edge Cases); (4) when the browser does not support required capabilities (e.g. WebCodecs), show a brief message and degrade gracefully (spec Edge Cases).
+- [x] T022 Run full quality gate on repo including `examples/`: `npm run format`, `npm run lint`, `npm run typecheck`, `npm test`; fix any failures and ensure no new biome/ts ignores in `examples/` or new tests without justification per research.md §6
+- [x] T023 Run quickstart validation: follow `specs/002-vega-demo-github-pages/quickstart.md` (install, build library, run demo, run tests) and confirm steps work
 
 ---
 
