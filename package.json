@@ -36,12 +36,10 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "lint": "biome lint .",
-    "typecheck": "tsc --noEmit && npm run build && cd examples && npm run typecheck",
+    "typecheck": "tsc --noEmit && npm run build",
     "test": "vitest run",
     "test:watch": "vitest",
     "build": "vite build && tsc -p tsconfig.build.json",
-    "build:demo": "npm run build && cd examples && npm install && npm run build",
-    "dev:demo": "npm run build && cd examples && npm run dev",
     "prepare": "husky",
     "release": "semantic-release"
   },
