@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["@webgpu/types"],
+    "types": ["@webgpu/types", "vite/client"],
     "target": "ES2020",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
