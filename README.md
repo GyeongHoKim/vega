@@ -87,6 +87,44 @@ player.setAdapter(null); // Remove adapter
 player.setAdapter(grayscaleAdapter); // Set new adapter
 ```
 
+### Using a third-party adapter
+
+Any object that implements `VideoFrameAdapter` can be passed as `adapter` or via `player.setAdapter()`. For example, [@gyeonghokim/fisheye.js](https://www.npmjs.com/package/@gyeonghokim/fisheye.js) runs lens correction on the GPU and returns a **new** VideoFrame (input is not modified); the adapter must close the original frame:
+
+```typescript
+import { createVega, type VideoFrameAdapter } from "@gyeonghokim/vega";
+import { Fisheye } from "@gyeonghokim/fisheye.js";
+
+const canvas = document.getElementById("video-canvas") as HTMLCanvasElement;
+
+const fisheye = new Fisheye({
+  fx: 500,
+  fy: 500,
+  cx: 640,
+  cy: 360,
+  k1: 0.1,
+  k2: 0,
+  k3: 0,
+  k4: 0,
+  width: 1280,
+  height: 720,
+  projection: { kind: "rectilinear" },
+});
+
+const fisheyeAdapter: VideoFrameAdapter = {
+  async process(frame: VideoFrame): Promise<VideoFrame> {
+    const out = await fisheye.undistort(frame);
+    frame.close();
+    // Default/PTZ mode: single frame. Pane mode returns VideoFrame[].
+    return out as VideoFrame;
+  },
+};
+
+const player = createVega({ canvas, adapter: fisheyeAdapter });
+await player.load("video.mp4");
+player.play();
+```
+
 ## API Reference
 
 ### `createVega(options: VegaOptions): Vega`
@@ -154,6 +192,7 @@ interface Vega {
 | `timeupdate` | Current time changed |
 | `loadedmetadata` | Media info available |
 | `canplay` | Ready to play |
+| `waiting` | Buffering / waiting for data |
 | `volumechange` | Volume or muted state changed |
 | `error` | An error occurred |
 
