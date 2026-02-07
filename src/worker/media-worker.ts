@@ -1,7 +1,6 @@
 /**
- * Media Worker
- * Handles demuxing and decoding in a background Web Worker.
- * Based on W3C WebCodecs media_worker.js pattern.
+ * Media Worker – demuxing and decoding in a Web Worker (W3C WebCodecs pattern).
+ * MP4Box is loaded with DataStream exposed on globalThis for worker scope.
  */
 
 import type {
@@ -19,7 +18,6 @@ import type {
   MP4AudioTrackInfo,
   MP4Sample,
 } from "../demuxer/mp4box-types.js";
-// Load full mp4box; some internals expect globals (DataStream), so expose them in worker scope
 import * as mp4box from "mp4box";
 
 const mp4boxExports = mp4box as unknown as { createFile: () => MP4BoxFile; DataStream?: unknown };
@@ -28,18 +26,17 @@ if (typeof globalThis !== "undefined" && mp4boxExports.DataStream) {
 }
 const createFile = mp4boxExports.createFile;
 
-// State
 let playing = false;
 let lastMediaTimeSecs = 0;
 let lastMediaTimeCapturePoint = 0;
 let animationFrameId: number | null = null;
+/** Total media duration in seconds; 0 until initialized. */
+let mediaDurationSecs = 0;
 
-// Components (initialized lazily)
 let demuxer: MP4DemuxerWorker | null = null;
 let videoRenderer: VideoDecoderWrapper | null = null;
 const audioDecoder: AudioDecoder | null = null;
 
-// Buffers
 const videoFrameBuffer: VideoFrame[] = [];
 const audioDataBuffer: AudioData[] = [];
 
@@ -66,7 +63,6 @@ function postError(message: string, code?: string): void {
  */
 function updateMediaTime(mediaTimeSecs: number, capturedAtHighResTimestamp: number): void {
   lastMediaTimeSecs = mediaTimeSecs;
-  // Translate to worker's time origin
   lastMediaTimeCapturePoint = capturedAtHighResTimestamp - performance.timeOrigin;
 }
 
@@ -110,25 +106,56 @@ class MP4DemuxerWorker {
     this.file.onSamples = this.onSamples.bind(this);
   }
 
+  /** Chunk size for range requests. One chunk is held in MP4Box at a time. */
+  private static readonly STREAM_CHUNK_SIZE = 256 * 1024;
+
   async loadFromUrl(url: string): Promise<void> {
     this.loadError = null;
     this.info = null;
-    const response = await fetch(url);
-    const reader = response.body?.getReader();
-    if (!reader) throw new Error("Response body is null");
-    let offset = 0;
+
+    const firstResponse = await fetch(url, {
+      headers: { Range: `bytes=0-${MP4DemuxerWorker.STREAM_CHUNK_SIZE - 1}` },
+    });
+
+    if (firstResponse.status === 200 && !firstResponse.headers.has("Content-Range")) {
+      await this.loadFromBuffer(await firstResponse.arrayBuffer());
+      return;
+    }
+
+    if (firstResponse.status !== 200 && firstResponse.status !== 206) {
+      throw new Error(`Fetch failed: ${firstResponse.status}`);
+    }
+
+    let nextOffset = 0;
+    const chunkSize = MP4DemuxerWorker.STREAM_CHUNK_SIZE;
 
     while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
+      const response =
+        nextOffset === 0
+          ? firstResponse
+          : await fetch(url, {
+              headers: { Range: `bytes=${nextOffset}-${nextOffset + chunkSize - 1}` },
+            });
+
+      if (response.status !== 200 && response.status !== 206) {
+        throw new Error(`Fetch failed: ${response.status}`);
+      }
+
+      const ab = await response.arrayBuffer();
+      if (ab.byteLength === 0) {
         this.file.flush();
         break;
       }
 
-      const buffer = value.buffer as ArrayBuffer & { fileStart: number };
-      buffer.fileStart = offset;
-      offset += buffer.byteLength;
-      this.file.appendBuffer(buffer);
+      const buffer = ab as ArrayBuffer & { fileStart: number };
+      buffer.fileStart = nextOffset;
+      const next = this.file.appendBuffer(buffer);
+      nextOffset = typeof next === "number" ? next : nextOffset + ab.byteLength;
+
+      if (ab.byteLength < chunkSize) {
+        this.file.flush();
+        break;
+      }
     }
   }
 
@@ -145,6 +172,14 @@ class MP4DemuxerWorker {
     this.info = info;
     this.videoTrack = info.videoTracks[0];
     this.audioTrack = info.audioTracks[0];
+
+    if (this.videoTrack) {
+      this.file.setExtractionOptions(this.videoTrack.id, null, { nbSamples: 50 });
+    }
+    if (this.audioTrack) {
+      this.file.setExtractionOptions(this.audioTrack.id, null, { nbSamples: 50 });
+    }
+    this.file.start();
 
     if (this.infoResolver) {
       this.infoResolver(info);
@@ -245,14 +280,12 @@ class MP4DemuxerWorker {
 
   startVideoExtraction(): void {
     if (this.videoTrack) {
-      this.file.setExtractionOptions(this.videoTrack.id, null, { nbSamples: 50 });
       this.file.start();
     }
   }
 
   startAudioExtraction(): void {
     if (this.audioTrack) {
-      this.file.setExtractionOptions(this.audioTrack.id, null, { nbSamples: 50 });
       this.file.start();
     }
   }
@@ -279,6 +312,11 @@ class MP4DemuxerWorker {
       this.audioSampleResolver = resolve;
       this.file.start();
     });
+  }
+
+  /** Reset extraction position so next getNextVideoSample() returns from given time (e.g. after seek). */
+  seek(timeSecs: number): void {
+    this.file.seek(timeSecs, true);
   }
 
   getMediaInfo(): MediaInfo {
@@ -400,8 +438,18 @@ function renderVideo(): void {
   if (!playing) return;
 
   const timestamp = getMediaTimeMicroseconds();
+  const mediaTimeSecs = timestamp / 1_000_000;
 
-  // Choose best frame
+  if (mediaDurationSecs > 0 && mediaTimeSecs >= mediaDurationSecs - 0.001) {
+    playing = false;
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+    postResponse({ type: "ended" });
+    return;
+  }
+
   let bestFrame: VideoFrame | null = null;
   let bestIndex = -1;
   let minDelta = Number.MAX_VALUE;
@@ -415,7 +463,6 @@ function renderVideo(): void {
   }
 
   if (bestIndex >= 0) {
-    // Close stale frames
     for (let i = 0; i < bestIndex; i++) {
       videoFrameBuffer[i].close();
     }
@@ -424,7 +471,6 @@ function renderVideo(): void {
   }
 
   if (bestFrame) {
-    // Transfer frame to main thread
     const response: FrameReadyResponse = {
       type: "frame-ready",
       frame: bestFrame,
@@ -433,10 +479,7 @@ function renderVideo(): void {
     postResponse(response);
   }
 
-  // Fill buffer
   videoRenderer?.fillBuffer();
-
-  // Schedule next render
   animationFrameId = requestAnimationFrame(renderVideo);
 }
 
@@ -447,7 +490,6 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
   switch (command.command) {
     case "initialize": {
       try {
-        // Create demuxer
         demuxer = new MP4DemuxerWorker();
 
         if (typeof command.source === "string") {
@@ -458,7 +500,6 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
 
         await demuxer.getInfo();
 
-        // Initialize video decoder
         if (demuxer.hasVideoTrack()) {
           const videoConfig = demuxer.getVideoDecoderConfig();
           if (videoConfig) {
@@ -472,7 +513,6 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
           }
         }
 
-        // Initialize audio decoder
         let audioConfig: AudioDecoderConfig | null = null;
         let sharedArrayBuffer: SharedArrayBuffer | undefined;
 
@@ -480,11 +520,11 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
           audioConfig = demuxer.getAudioDecoderConfig();
           if (audioConfig) {
             demuxer.startAudioExtraction();
-            // Audio is processed on main thread via AudioRenderer
           }
         }
 
         const mediaInfo = demuxer.getMediaInfo();
+        mediaDurationSecs = mediaInfo.duration;
         const response: InitializeDoneResponse = {
           type: "initialize-done",
           mediaInfo,
@@ -522,7 +562,10 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
     }
 
     case "seek": {
-      // Clear buffers
+      if (demuxer) {
+        demuxer.seek(command.time);
+      }
+
       for (const frame of videoFrameBuffer) {
         frame.close();
       }
@@ -533,10 +576,7 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
       }
       audioDataBuffer.length = 0;
 
-      // Flush decoders
       await videoRenderer?.flush();
-
-      // Refill buffers
       await videoRenderer?.fillBuffer();
 
       postResponse({ type: "seek-done", time: command.time });
@@ -550,7 +590,6 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
         animationFrameId = null;
       }
 
-      // Clear buffers
       for (const frame of videoFrameBuffer) {
         frame.close();
       }
@@ -560,6 +599,7 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
 
     case "destroy": {
       playing = false;
+      mediaDurationSecs = 0;
       if (animationFrameId !== null) {
         cancelAnimationFrame(animationFrameId);
       }
@@ -576,9 +616,6 @@ async function handleCommand(command: WorkerCommand): Promise<void> {
   }
 }
 
-// Listen for messages
 self.addEventListener("message", async (e: MessageEvent<WorkerCommand>) => {
   await handleCommand(e.data);
 });
-
-console.info("[MediaWorker] Started");
