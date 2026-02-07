@@ -23,8 +23,6 @@ import type { VideoRenderer } from "./types/index.js";
 import { create as createRenderer } from "./factory.js";
 import type { AudioRenderer } from "./audio/audio-renderer.js";
 
-// Import worker as URL for Vite
-// @ts-expect-error Vite worker import
 import MediaWorkerUrl from "./worker/media-worker.ts?worker&url";
 
 /**
@@ -85,6 +83,8 @@ class VegaPlayer extends EventEmitter implements Vega {
   private _volume = 1.0;
   private _muted = false;
   private _loop = false;
+  /** Last loaded source; used to re-load from start when playing after ended. */
+  private _lastSource: string | File | Blob | null = null;
 
   private playbackStartTime = 0;
   private playbackStartMediaTime = 0;
@@ -102,13 +102,11 @@ class VegaPlayer extends EventEmitter implements Vega {
     this._volume = opts.volume ?? 1.0;
     this._loop = opts.loop ?? false;
 
-    // Create renderer
     if (this.canvas instanceof HTMLCanvasElement) {
       this.renderer = createRenderer(this.canvas, {
         type: opts.rendererType ?? "2d",
       });
     } else {
-      // OffscreenCanvas - create 2D renderer
       const ctx = this.canvas.getContext("2d");
       if (!ctx) {
         throw new Error("Failed to get 2D context for OffscreenCanvas");
@@ -122,17 +120,24 @@ class VegaPlayer extends EventEmitter implements Vega {
     }
   }
 
-  // ============ Public API ============
-
   async load(source: string | File | Blob): Promise<MediaInfo> {
     if (this.destroyed) {
       throw new Error("Player has been destroyed");
     }
 
     this._state = "loading";
+    this._lastSource = source;
 
     try {
-      // Prepare source URL or data
+      if (this.worker) {
+        this.worker.terminate();
+        this.worker = null;
+      }
+      for (const frame of this.pendingFrames) {
+        frame.close();
+      }
+      this.pendingFrames = [];
+
       let sourceData: string | ArrayBuffer;
       if (typeof source === "string") {
         sourceData = source;
@@ -140,7 +145,6 @@ class VegaPlayer extends EventEmitter implements Vega {
         sourceData = await source.arrayBuffer();
       }
 
-      // Create worker
       this.worker = new Worker(MediaWorkerUrl, { type: "module" });
       this.worker.onmessage = this.handleWorkerMessage.bind(this);
       this.worker.onerror = (e) => {
@@ -148,11 +152,13 @@ class VegaPlayer extends EventEmitter implements Vega {
         this.handleError("Worker error", e.error);
       };
 
-      // Initialize worker
       const mediaInfo = await this.initializeWorker(sourceData);
       this._mediaInfo = mediaInfo;
 
-      // Initialize audio if available
+      this._currentTime = 0;
+      this.playbackStartMediaTime = 0;
+      this.playbackStartTime = performance.now();
+
       if (mediaInfo.audioTrack) {
         await this.initializeAudio(mediaInfo);
       }
@@ -171,6 +177,14 @@ class VegaPlayer extends EventEmitter implements Vega {
 
   async play(): Promise<void> {
     if (this._state === "playing") return;
+    if (this._state === "ended") {
+      if (this._lastSource != null) {
+        await this.load(this._lastSource);
+      } else {
+        await this.seek(0);
+        this._state = "ready";
+      }
+    }
     if (this._state !== "ready" && this._state !== "paused") {
       throw new Error(`Cannot play in state: ${this._state}`);
     }
@@ -179,17 +193,13 @@ class VegaPlayer extends EventEmitter implements Vega {
     this.playbackStartTime = performance.now();
     this.playbackStartMediaTime = this._currentTime;
 
-    // Start worker playback
     this.sendWorkerCommand({
       command: "play",
       mediaTimeSecs: this._currentTime,
       mediaTimeCapturedAtHighResTimestamp: performance.now() + performance.timeOrigin,
     });
 
-    // Start audio
     this.audioRenderer?.play();
-
-    // Start render loop
     this.startRenderLoop();
 
     this.emit("play");
@@ -200,16 +210,9 @@ class VegaPlayer extends EventEmitter implements Vega {
 
     this._state = "paused";
 
-    // Update current time
     this._currentTime = this.getCurrentPlaybackTime();
-
-    // Stop worker playback
     this.sendWorkerCommand({ command: "pause" });
-
-    // Pause audio
     this.audioRenderer?.pause();
-
-    // Stop render loop
     this.stopRenderLoop();
 
     this.emit("pause");
@@ -228,16 +231,13 @@ class VegaPlayer extends EventEmitter implements Vega {
     this._state = "seeking";
     this.emit("seeking");
 
-    // Clamp time to valid range
     const targetTime = Math.max(0, Math.min(time, this._mediaInfo.duration));
 
-    // Clear pending frames
     for (const frame of this.pendingFrames) {
       frame.close();
     }
     this.pendingFrames = [];
 
-    // Send seek command to worker
     await new Promise<void>((resolve) => {
       const handler = (e: MessageEvent<WorkerResponse>) => {
         if (e.data.type === "seek-done") {
@@ -268,7 +268,6 @@ class VegaPlayer extends EventEmitter implements Vega {
 
     this.sendWorkerCommand({ command: "stop" });
 
-    // Clear frames
     for (const frame of this.pendingFrames) {
       frame.close();
     }
@@ -276,8 +275,6 @@ class VegaPlayer extends EventEmitter implements Vega {
 
     this._state = "ready";
   }
-
-  // ============ Getters ============
 
   get currentTime(): number {
     if (this._state === "playing") {
@@ -314,8 +311,6 @@ class VegaPlayer extends EventEmitter implements Vega {
     return this._mediaInfo;
   }
 
-  // ============ Setters ============
-
   setVolume(volume: number): void {
     this._volume = Math.max(0, Math.min(1, volume));
     if (!this._muted) {
@@ -338,36 +333,27 @@ class VegaPlayer extends EventEmitter implements Vega {
     return this.adapter;
   }
 
-  // ============ Cleanup ============
-
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
 
     this.stopRenderLoop();
 
-    // Clear frames
     for (const frame of this.pendingFrames) {
       frame.close();
     }
     this.pendingFrames = [];
 
-    // Destroy worker
     this.sendWorkerCommand({ command: "destroy" });
     this.worker?.terminate();
     this.worker = null;
 
-    // Destroy audio
     this.audioRenderer?.destroy();
     this.audioRenderer = null;
-
-    // Remove listeners
     this.removeAllListeners();
 
     this._state = "idle";
   }
-
-  // ============ Private Methods ============
 
   private async initializeWorker(source: string | ArrayBuffer): Promise<MediaInfo> {
     return new Promise((resolve, reject) => {
@@ -386,12 +372,11 @@ class VegaPlayer extends EventEmitter implements Vega {
     });
   }
 
+  /**
+   * Audio playback not yet implemented (requires SharedArrayBuffer and AudioWorklet).
+   */
   private async initializeAudio(mediaInfo: MediaInfo): Promise<void> {
     if (!mediaInfo.audioTrack) return;
-
-    // Audio initialization would be done here
-    // For now, we'll skip audio as it requires more complex setup
-    // with SharedArrayBuffer and AudioWorklet
     console.info("[Vega] Audio track available but audio playback not yet implemented");
   }
 
@@ -411,7 +396,9 @@ class VegaPlayer extends EventEmitter implements Vega {
 
       case "ended": {
         this._state = "ended";
+        this._currentTime = this.duration;
         this.stopRenderLoop();
+        this.emit("timeupdate");
         this.emit("ended");
 
         if (this._loop) {
@@ -462,9 +449,8 @@ class VegaPlayer extends EventEmitter implements Vega {
   private async renderFrame(): Promise<void> {
     if (this.pendingFrames.length === 0) return;
 
-    const targetTime = this.getCurrentPlaybackTime() * 1_000_000; // Convert to microseconds
+    const targetTime = this.getCurrentPlaybackTime() * 1_000_000;
 
-    // Find best frame
     let bestFrame: VideoFrame | null = null;
     let bestIndex = -1;
     let minDelta = Number.MAX_VALUE;
@@ -478,7 +464,6 @@ class VegaPlayer extends EventEmitter implements Vega {
     }
 
     if (bestIndex >= 0) {
-      // Close stale frames
       for (let i = 0; i < bestIndex; i++) {
         this.pendingFrames[i].close();
       }
@@ -488,7 +473,6 @@ class VegaPlayer extends EventEmitter implements Vega {
 
     if (bestFrame) {
       try {
-        // Apply adapter if present
         let frameToRender = bestFrame;
         if (this.adapter) {
           const processed = await this.adapter.process(bestFrame);
@@ -498,7 +482,6 @@ class VegaPlayer extends EventEmitter implements Vega {
           frameToRender = processed;
         }
 
-        // Render frame
         await this.renderer.draw(frameToRender);
       } catch (error) {
         bestFrame.close();
@@ -519,7 +502,10 @@ class VegaPlayer extends EventEmitter implements Vega {
 
   private getCurrentPlaybackTime(): number {
     const elapsed = (performance.now() - this.playbackStartTime) / 1000;
-    return this.playbackStartMediaTime + elapsed;
+    const raw = this.playbackStartMediaTime + elapsed;
+    const duration = this._mediaInfo?.duration;
+    if (duration != null && raw >= duration) return duration;
+    return raw;
   }
 }
 
@@ -532,5 +518,4 @@ export function createVega(options: VegaOptions): Vega {
   return new VegaPlayer(options);
 }
 
-// Re-export for convenience
 export type { Vega, VegaOptions, VideoFrameAdapter, MediaInfo, VegaEvent };
