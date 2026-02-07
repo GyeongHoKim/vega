@@ -42,7 +42,8 @@
     "build": "vite build && tsc -p tsconfig.build.json",
     "build:demo": "npm run build && cd examples && npm install && npm run build",
     "dev:demo": "npm run build && cd examples && npm run dev",
-    "prepare": "husky"
+    "prepare": "husky",
+    "release": "semantic-release"
   },
   "dependencies": {
     "mp4box": "^0.5.4"
