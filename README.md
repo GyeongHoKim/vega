@@ -2,14 +2,14 @@
 
 See more. See better. See Vega
 
-A WebCodecs-based MP4 video player with **custom VideoFrame processing** support. Apply real-time effects like fisheye undistortion, super resolution, or any custom image processing while the player handles decoding, synchronization, and rendering.
+A WebCodecs-based MP4 player powered by mediabunny with **custom VideoFrame processing** via `pipeThrough(TransformStream)`.
 
 ## Features
 
 - **WebCodecs API**: Hardware-accelerated video decoding
-- **Custom Frame Processing**: Inject your own VideoFrame adapter for real-time effects
+- **Custom Frame Processing**: Chain `TransformStream` stages for real-time effects
 - **Multiple Render Backends**: Canvas 2D, WebGL, and WebGPU
-- **Web Worker Architecture**: Demuxing and decoding run in background threads
+- **Multi-Input Loading**: URL, URL object, File/Blob, ArrayBuffer/TypedArray, ReadableStream
 - **Audio Support**: WebAudio API with AudioWorklet (coming soon)
 - **TypeScript**: Full type definitions included
 
@@ -24,7 +24,10 @@ npm install @gyeonghokim/vega
 ```typescript
 import { createVega } from "@gyeonghokim/vega";
 
-const canvas = document.getElementById("video-canvas") as HTMLCanvasElement;
+const canvas = document.getElementById("video-canvas");
+if (!(canvas instanceof HTMLCanvasElement)) {
+  throw new Error("Expected #video-canvas to be an HTMLCanvasElement");
+}
 
 // Create player
 const player = createVega({ canvas });
@@ -39,63 +42,44 @@ await player.seek(10); // Seek to 10 seconds
 player.setVolume(0.5);
 ```
 
-## Custom VideoFrame Adapter
+## Custom VideoFrame Pipeline
 
 The key feature of Vega is the ability to process every video frame before rendering. Use this for effects like lens correction, color grading, upscaling, or any custom image processing.
 
 ```typescript
-import { createVega, type VideoFrameAdapter } from "@gyeonghokim/vega";
+import { createVega } from "@gyeonghokim/vega";
 
-// Example: Grayscale filter adapter
-const grayscaleAdapter: VideoFrameAdapter = {
-  async process(frame: VideoFrame): Promise<VideoFrame> {
-    // Create an OffscreenCanvas for processing
-    const canvas = new OffscreenCanvas(frame.displayWidth, frame.displayHeight);
-    const ctx = canvas.getContext("2d")!;
-    
-    // Draw the frame
-    ctx.drawImage(frame, 0, 0);
-    
-    // Apply grayscale filter
-    ctx.filter = "grayscale(100%)";
-    ctx.drawImage(canvas, 0, 0);
-    
-    // Create new VideoFrame from processed canvas
-    const processedFrame = new VideoFrame(canvas, {
-      timestamp: frame.timestamp,
-      duration: frame.duration ?? undefined,
-    });
-    
-    // Close original frame (adapter is responsible for this)
-    frame.close();
-    
-    return processedFrame;
-  }
-};
+const canvas = document.getElementById("canvas");
+if (!(canvas instanceof HTMLCanvasElement)) {
+  throw new Error("Expected #canvas to be an HTMLCanvasElement");
+}
+const player = createVega({ canvas });
 
-// Create player with adapter
-const player = createVega({
-  canvas: document.getElementById("canvas") as HTMLCanvasElement,
-  adapter: grayscaleAdapter,
+const identity = new TransformStream<VideoFrame, VideoFrame>({
+  transform(frame, controller) {
+    controller.enqueue(frame);
+  },
 });
 
+player.pipeThrough(identity);
 await player.load("video.mp4");
 player.play();
 
-// You can also change the adapter at runtime
-player.setAdapter(null); // Remove adapter
-player.setAdapter(grayscaleAdapter); // Set new adapter
+player.clearPipeline();
 ```
 
-### Using a third-party adapter
+### Using a third-party transform
 
-Any object that implements `VideoFrameAdapter` can be passed as `adapter` or via `player.setAdapter()`. For example, [@gyeonghokim/fisheye.js](https://www.npmjs.com/package/@gyeonghokim/fisheye.js) runs lens correction on the GPU and returns a **new** VideoFrame (input is not modified); the adapter must close the original frame:
+You can wrap external frame processors in a `TransformStream<VideoFrame, VideoFrame>` and attach them with `pipeThrough()`.
 
 ```typescript
-import { createVega, type VideoFrameAdapter } from "@gyeonghokim/vega";
+import { createVega } from "@gyeonghokim/vega";
 import { Fisheye } from "@gyeonghokim/fisheye.js";
 
-const canvas = document.getElementById("video-canvas") as HTMLCanvasElement;
+const canvas = document.getElementById("video-canvas");
+if (!(canvas instanceof HTMLCanvasElement)) {
+  throw new Error("Expected #video-canvas to be an HTMLCanvasElement");
+}
 
 const fisheye = new Fisheye({
   fx: 500,
@@ -111,16 +95,20 @@ const fisheye = new Fisheye({
   projection: { kind: "rectilinear" },
 });
 
-const fisheyeAdapter: VideoFrameAdapter = {
-  async process(frame: VideoFrame): Promise<VideoFrame> {
+const fisheyeTransform = new TransformStream<VideoFrame, VideoFrame>({
+  async transform(frame, controller) {
     const out = await fisheye.undistort(frame);
+    if (!(out instanceof VideoFrame)) {
+      frame.close();
+      throw new Error("Expected fisheye.undistort to return a VideoFrame");
+    }
     frame.close();
-    // Default/PTZ mode: single frame. Pane mode returns VideoFrame[].
-    return out as VideoFrame;
+    controller.enqueue(out);
   },
-};
+});
 
-const player = createVega({ canvas, adapter: fisheyeAdapter });
+const player = createVega({ canvas });
+player.pipeThrough(fisheyeTransform);
 await player.load("video.mp4");
 player.play();
 ```
@@ -137,7 +125,7 @@ Creates a new Vega player instance.
 |--------|------|---------|-------------|
 | `canvas` | `HTMLCanvasElement \| OffscreenCanvas` | required | Target canvas for video rendering |
 | `rendererType` | `"2d" \| "webgl" \| "webgpu"` | `"2d"` | Rendering backend |
-| `adapter` | `VideoFrameAdapter` | `undefined` | Custom frame processor |
+| `formats` | `InputFormat[]` | `[MP4]` | Mediabunny input formats |
 | `volume` | `number` | `1.0` | Initial volume (0.0 - 1.0) |
 | `loop` | `boolean` | `false` | Loop playback |
 | `autoplay` | `boolean` | `false` | Auto-start after loading |
@@ -147,7 +135,7 @@ Creates a new Vega player instance.
 ```typescript
 interface Vega {
   // Loading
-  load(source: string | File | Blob): Promise<MediaInfo>;
+  load(source: MediaInput): Promise<MediaInfo>;
   
   // Playback control
   play(): Promise<void>;
@@ -168,8 +156,8 @@ interface Vega {
   // Settings
   setVolume(volume: number): void;
   setMuted(muted: boolean): void;
-  setAdapter(adapter: VideoFrameAdapter | null): void;
-  getAdapter(): VideoFrameAdapter | null;
+  pipeThrough(transform: TransformStream<VideoFrame, VideoFrame>): void;
+  clearPipeline(): void;
   
   // Events
   on(event: VegaEvent, callback: VegaEventCallback): void;
@@ -219,20 +207,7 @@ interface MediaInfo {
 }
 ```
 
-## VideoFrameAdapter Interface
-
-```typescript
-interface VideoFrameAdapter {
-  /**
-   * Process a VideoFrame before rendering.
-   * @param frame - The decoded VideoFrame to process
-   * @returns The processed VideoFrame (can be the same or a new one)
-   */
-  process(frame: VideoFrame): VideoFrame | Promise<VideoFrame>;
-}
-```
-
-**Important**: If your adapter creates a new VideoFrame, you must close the original frame to prevent memory leaks.
+`MediaInput` accepts: `string`, `URL`, `File`, `Blob`, `ArrayBuffer`, `ArrayBufferView`, `ReadableStream<Uint8Array>`, and mediabunny `Source`.
 
 ## Raw Frame Utilities
 
@@ -262,15 +237,7 @@ Supported formats: `I420`, `I420A`, `I422`, `I444`, `I444A`, `NV12`, `RGBA`, `RG
 ## Browser Requirements
 
 - **WebCodecs API**: Required for video decoding
-- **Web Workers**: Required for background processing
-- **SharedArrayBuffer**: Required for audio (needs COOP/COEP headers)
-
-For SharedArrayBuffer support, your server must send these headers:
-
-```
-Cross-Origin-Opener-Policy: same-origin
-Cross-Origin-Embedder-Policy: require-corp
-```
+- **TransformStream**: Required for `pipeThrough` frame pipelines
 
 ## Supported Formats
 
@@ -304,35 +271,21 @@ npm run build       # Build library
 
 ```mermaid
 flowchart TB
-    subgraph MainThread["Main Thread"]
-        Vega["Vega Player"]
-        Adapter["VideoFrame Adapter<br/>(optional)"]
-        Renderer["Renderer<br/>(2D/WebGL/WebGPU)"]
-        Canvas["Canvas"]
-        AudioCtx["AudioContext"]
-        WorkerBridge["Worker Bridge"]
-        
-        Vega --> WorkerBridge
-        WorkerBridge --> Adapter
-        Adapter -->|"VideoFrame"| Renderer
-        Renderer --> Canvas
-        WorkerBridge -->|"AudioData"| AudioCtx
-    end
-    
-    subgraph MediaWorker["Media Worker"]
-        Demuxer["Demuxer<br/>(MP4Box.js)"]
-        VideoDecoder["Video Decoder<br/>(WebCodecs)"]
-        AudioDecoder["Audio Decoder<br/>(WebCodecs)"]
-        FrameBuffer["Frame Buffer"]
-        
-        Demuxer -->|"EncodedVideoChunk"| VideoDecoder
-        Demuxer -->|"EncodedAudioChunk"| AudioDecoder
-        VideoDecoder --> FrameBuffer
-    end
-    
-    WorkerBridge <-->|"postMessage"| Demuxer
-    FrameBuffer -->|"VideoFrame"| WorkerBridge
-    AudioDecoder -->|"AudioData"| WorkerBridge
+    Input["MediaInput<br/>(URL/File/Blob/Buffer/Stream/Source)"]
+    SourceFactory["createSource()"]
+    MBInput["mediabunny Input"]
+    VideoTrack["Primary Video Track"]
+    SampleSink["VideoSampleSink"]
+    Vega["Vega Player"]
+    Pipeline["TransformStream Pipeline<br/>(optional)"]
+    Renderer["Renderer<br/>(2D/WebGL/WebGPU)"]
+    Canvas["Canvas"]
+
+    Input --> SourceFactory --> MBInput
+    MBInput --> VideoTrack --> SampleSink
+    Vega -->|"getSample(currentTime)"| SampleSink
+    SampleSink -->|"VideoSample / VideoFrame"| Vega
+    Vega --> Pipeline --> Renderer --> Canvas
 ```
 
 ## License

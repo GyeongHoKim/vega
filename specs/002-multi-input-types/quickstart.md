@@ -31,7 +31,11 @@ player.play();
 ```typescript
 const fileInput = document.querySelector<HTMLInputElement>('#file-input');
 fileInput.addEventListener('change', async (e) => {
-  const file = (e.target as HTMLInputElement).files?.[0];
+  const target = e.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  const file = target.files?.[0];
   if (file) {
     await player.load(file);
     player.play();

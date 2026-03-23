@@ -17,8 +17,8 @@
 
 **Purpose**: Swap dependencies and clean build configuration
 
-- [ ] T001 Replace `mp4box` with `mediabunny` in package.json and run `npm install`
-- [ ] T002 Remove `optimizeDeps.exclude: ["mp4box"]` and worker entry config from vite.config.ts
+- [X] T001 Replace `mp4box` with `mediabunny` in package.json and run `npm install`
+- [X] T002 Remove `optimizeDeps.exclude: ["mp4box"]` and worker entry config from vite.config.ts
 
 ---
 
@@ -28,13 +28,13 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Delete src/worker/media-worker.ts and src/worker/video-renderer.ts (entire src/worker/ directory)
-- [ ] T004 [P] Delete src/demuxer/mp4-demuxer.ts and src/demuxer/mp4box-types.ts (entire src/demuxer/ directory)
-- [ ] T005 [P] Delete src/mp4box.d.ts
-- [ ] T006 [P] Delete src/types/worker-messages.ts
-- [ ] T007 [P] Delete src/audio/audio-renderer.ts, src/audio/audio-worklet-processor.ts, and src/audio/ring-buffer.ts (entire src/audio/ directory)
-- [ ] T008 Update src/types/vega.ts: add `MediaInput` type, replace `VideoFrameAdapter`/`setAdapter`/`getAdapter` with `pipeThrough`/`clearPipeline`, add `codedWidth`/`codedHeight`/`rotation` to `VideoTrackInfo`, remove `isFragmented`/`brands` from `MediaInfo`, add `formats` to `VegaOptions` — per contracts/vega-api.ts
-- [ ] T009 Create src/input/ directory and src/input/create-source.ts with `createSource(input: MediaInput): Source` skeleton — switch on typeof/instanceof returning the correct mediabunny Source subclass (BlobSource, BufferSource, UrlSource, ReadableStreamSource, or Source pass-through)
+- [X] T003 [P] Delete src/worker/media-worker.ts and src/worker/video-renderer.ts (entire src/worker/ directory)
+- [X] T004 [P] Delete src/demuxer/mp4-demuxer.ts and src/demuxer/mp4box-types.ts (entire src/demuxer/ directory)
+- [X] T005 [P] Delete src/mp4box.d.ts
+- [X] T006 [P] Delete src/types/worker-messages.ts
+- [X] T007 [P] Delete src/audio/audio-renderer.ts, src/audio/audio-worklet-processor.ts, and src/audio/ring-buffer.ts (entire src/audio/ directory)
+- [X] T008 Update src/types/vega.ts: add `MediaInput` type, replace `VideoFrameAdapter`/`setAdapter`/`getAdapter` with `pipeThrough`/`clearPipeline`, add `codedWidth`/`codedHeight`/`rotation` to `VideoTrackInfo`, remove `isFragmented`/`brands` from `MediaInfo`, add `formats` to `VegaOptions` — per contracts/vega-api.ts
+- [X] T009 Create src/input/ directory and src/input/create-source.ts with `createSource(input: MediaInput): Source` skeleton — switch on typeof/instanceof returning the correct mediabunny Source subclass (BlobSource, BufferSource, UrlSource, ReadableStreamSource, or Source pass-through)
 
 **Checkpoint**: Legacy code removed, new types defined, source factory scaffolded — implementation can begin
 
@@ -48,16 +48,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement BlobSource and BufferSource branches in src/input/create-source.ts — File/Blob → `new BlobSource(blob)`, ArrayBuffer/ArrayBufferView → `new BufferSource(buffer)`
-- [ ] T011 [US1] Rewrite load() in src/vega.ts: remove Worker creation, use `createSource()` + mediabunny `Input({ formats, source })`, extract `getPrimaryVideoTrack()` and `getPrimaryAudioTrack()`, build `MediaInfo` from `InputVideoTrack`/`InputAudioTrack` metadata (codec string via `getCodecParameterString()`, dimensions, frame rate via `computePacketStats()`, rotation), create `VideoSampleSink`, emit `loadedmetadata`/`canplay`
-- [ ] T012 [US1] Implement playback loop in src/vega.ts: `requestAnimationFrame` loop calling `videoSampleSink.getSample(currentTime)`, skip if same timestamp as last render, draw `VideoSample` to renderer via `sample.draw()` or by obtaining `VideoFrame`, manage `lastRenderedTimestamp` tracking
-- [ ] T013 [US1] Implement seek in src/vega.ts: pause rAF loop → `videoSampleSink.getSample(targetTime)` → render frame → update currentTime → resume if was playing → emit `seeking`/`seeked`
-- [ ] T014 [US1] Implement pipeThrough()/clearPipeline() in src/vega.ts: maintain `pipeline: TransformStream[]` array, in render loop push frame through chained transforms before drawing, handle transform errors by emitting `ADAPTER_ERROR`
-- [ ] T015 [US1] Implement play()/pause()/stop()/destroy() in src/vega.ts: play starts rAF loop + updates clock, pause stops loop + snapshots currentTime, stop resets to 0 + pauses, destroy calls `input.dispose()` + clears all resources
-- [ ] T016 [US1] Implement ended detection in src/vega.ts: in rAF loop, when currentTime >= duration emit `ended`, handle loop option by reloading from `_lastSource`
-- [ ] T017 [US1] Update src/index.ts: export new types (`MediaInput`), remove `VideoFrameAdapter` export, keep all other existing exports unchanged
-- [ ] T018 [US1] Update adapter tests in tests/integration/vega-playback.test.ts: rewrite `identityAdapter` to identity `TransformStream`, rewrite `setAdapter(identity)` to `pipeThrough(identity)`, rewrite throwing adapter to erroring `TransformStream`, update `getAdapter()` references to use pipeline state assertions
-- [ ] T019 [US1] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test` — fix any failures
+- [X] T010 [US1] Implement BlobSource and BufferSource branches in src/input/create-source.ts — File/Blob → `new BlobSource(blob)`, ArrayBuffer/ArrayBufferView → `new BufferSource(buffer)`
+- [X] T011 [US1] Rewrite load() in src/vega.ts: remove Worker creation, use `createSource()` + mediabunny `Input({ formats, source })`, extract `getPrimaryVideoTrack()` and `getPrimaryAudioTrack()`, build `MediaInfo` from `InputVideoTrack`/`InputAudioTrack` metadata (codec string via `getCodecParameterString()`, dimensions, frame rate via `computePacketStats()`, rotation), create `VideoSampleSink`, emit `loadedmetadata`/`canplay`
+- [X] T012 [US1] Implement playback loop in src/vega.ts: `requestAnimationFrame` loop calling `videoSampleSink.getSample(currentTime)`, skip if same timestamp as last render, draw `VideoSample` to renderer via `sample.draw()` or by obtaining `VideoFrame`, manage `lastRenderedTimestamp` tracking
+- [X] T013 [US1] Implement seek in src/vega.ts: pause rAF loop → `videoSampleSink.getSample(targetTime)` → render frame → update currentTime → resume if was playing → emit `seeking`/`seeked`
+- [X] T014 [US1] Implement pipeThrough()/clearPipeline() in src/vega.ts: maintain `pipeline: TransformStream[]` array, in render loop push frame through chained transforms before drawing, handle transform errors by emitting `ADAPTER_ERROR`
+- [X] T015 [US1] Implement play()/pause()/stop()/destroy() in src/vega.ts: play starts rAF loop + updates clock, pause stops loop + snapshots currentTime, stop resets to 0 + pauses, destroy calls `input.dispose()` + clears all resources
+- [X] T016 [US1] Implement ended detection in src/vega.ts: in rAF loop, when currentTime >= duration emit `ended`, handle loop option by reloading from `_lastSource`
+- [X] T017 [US1] Update src/index.ts: export new types (`MediaInput`), remove `VideoFrameAdapter` export, keep all other existing exports unchanged
+- [X] T018 [US1] Update adapter tests in tests/integration/vega-playback.test.ts: rewrite `identityAdapter` to identity `TransformStream`, rewrite `setAdapter(identity)` to `pipeThrough(identity)`, rewrite throwing adapter to erroring `TransformStream`, update `getAdapter()` references to use pipeline state assertions
+- [X] T019 [US1] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test` — fix any failures
 
 **Checkpoint**: Vega plays MP4 from URL string (backward compat), File, Blob, ArrayBuffer, Uint8Array. All existing tests updated and passing. Core mediabunny migration complete.
 
@@ -71,9 +71,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T020 [US2] Implement UrlSource branch in src/input/create-source.ts: `string` → `new UrlSource(input)`, `URL` → `new UrlSource(input)` (mediabunny's UrlSource constructor accepts both `string | URL | Request`)
-- [ ] T021 [US2] Verify backward compatibility: run existing test `loads fixture MP4, play()` which uses URL string — must pass without modification
-- [ ] T022 [US2] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
+- [X] T020 [US2] Implement UrlSource branch in src/input/create-source.ts: `string` → `new UrlSource(input)`, `URL` → `new UrlSource(input)` (mediabunny's UrlSource constructor accepts both `string | URL | Request`)
+- [X] T021 [US2] Verify backward compatibility: run existing test `loads fixture MP4, play()` which uses URL string — must pass without modification
+- [X] T022 [US2] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
 
 **Checkpoint**: URL string and URL object both work. Existing URL-based tests pass unmodified.
 
@@ -87,8 +87,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implement ReadableStreamSource branch in src/input/create-source.ts: `ReadableStream` → `new ReadableStreamSource(stream)`
-- [ ] T024 [US3] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
+- [X] T023 [US3] Implement ReadableStreamSource branch in src/input/create-source.ts: `ReadableStream` → `new ReadableStreamSource(stream)`
+- [X] T024 [US3] Run quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
 
 **Checkpoint**: All four input categories (File/Blob/Buffer, URL, ReadableStream) functional. Full FR-001 through FR-008 coverage.
 
@@ -98,10 +98,10 @@
 
 **Purpose**: Documentation, tree-shaking verification, final quality pass
 
-- [ ] T025 [P] Update README.md: replace old API examples with new `MediaInput` load signatures, replace adapter examples with `pipeThrough` examples, update architecture diagram, note mediabunny dependency
-- [ ] T026 [P] Verify tree shaking: build with `npm run build`, inspect dist/ output to confirm only used mediabunny modules (Input, MP4, BlobSource, BufferSource, UrlSource, ReadableStreamSource, VideoSampleSink, Source) are bundled
-- [ ] T027 Run final quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
-- [ ] T028 Validate quickstart.md code examples compile and match actual API signatures
+- [X] T025 [P] Update README.md: replace old API examples with new `MediaInput` load signatures, replace adapter examples with `pipeThrough` examples, update architecture diagram, note mediabunny dependency
+- [X] T026 [P] Verify tree shaking: build with `npm run build`, inspect dist/ output to confirm only used mediabunny modules (Input, MP4, BlobSource, BufferSource, UrlSource, ReadableStreamSource, VideoSampleSink, Source) are bundled
+- [X] T027 Run final quality gate: `npm run format && npm run lint && npm run typecheck && npm test`
+- [X] T028 Validate quickstart.md code examples compile and match actual API signatures
 
 ---
 
