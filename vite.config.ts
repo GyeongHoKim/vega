@@ -18,10 +18,4 @@ export default defineConfig({
       },
     },
   },
-  worker: {
-    format: "es",
-  },
-  optimizeDeps: {
-    exclude: ["mp4box"],
-  },
 });

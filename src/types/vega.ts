@@ -1,27 +1,5 @@
-/**
- * Vega Video Player - Public API Types
- * These types are exposed to library consumers.
- */
-
+import type { InputFormat, Source } from "mediabunny";
 import type { RendererType } from "./index.js";
-
-/**
- * Adapter interface for custom VideoFrame processing.
- * Users can implement this to apply effects like fisheye undistortion,
- * super resolution, color grading, etc.
- */
-export interface VideoFrameAdapter {
-  /**
-   * Process a VideoFrame before rendering.
-   * The returned frame will be rendered to the canvas.
-   * If a new frame is returned, the original frame should be closed by the adapter
-   * or the caller will close it.
-   *
-   * @param frame - The decoded VideoFrame to process
-   * @returns The processed VideoFrame (can be the same or a new one)
-   */
-  process(frame: VideoFrame): VideoFrame | Promise<VideoFrame>;
-}
 
 /**
  * Options for creating a Vega player instance.
@@ -33,9 +11,6 @@ export interface VegaOptions {
   /** Renderer backend type. Defaults to "2d" */
   rendererType?: RendererType;
 
-  /** Optional VideoFrame adapter for custom frame processing */
-  adapter?: VideoFrameAdapter;
-
   /** Initial volume (0.0 to 1.0). Defaults to 1.0 */
   volume?: number;
 
@@ -44,7 +19,20 @@ export interface VegaOptions {
 
   /** Whether to automatically start playback after loading. Defaults to false */
   autoplay?: boolean;
+
+  /** Mediabunny input formats to support. Defaults to [MP4]. */
+  formats?: InputFormat[];
 }
+
+export type MediaInput =
+  | string
+  | URL
+  | File
+  | Blob
+  | ArrayBuffer
+  | ArrayBufferView
+  | ReadableStream<Uint8Array>
+  | Source;
 
 /**
  * Information about a video track.
@@ -56,8 +44,14 @@ export interface VideoTrackInfo {
   width: number;
   /** Video height in pixels */
   height: number;
+  /** Raw coded width in pixels. */
+  codedWidth: number;
+  /** Raw coded height in pixels. */
+  codedHeight: number;
   /** Frame rate (frames per second) */
   frameRate: number;
+  /** Clockwise rotation in degrees. */
+  rotation: number;
   /** Bitrate in bits per second */
   bitrate?: number;
 }
@@ -86,10 +80,6 @@ export interface MediaInfo {
   videoTrack?: VideoTrackInfo;
   /** Audio track information (undefined if no audio track) */
   audioTrack?: AudioTrackInfo;
-  /** Whether the file is fragmented */
-  isFragmented?: boolean;
-  /** Container brands (e.g., ["isom", "mp42"]) */
-  brands?: string[];
 }
 
 /**
@@ -156,10 +146,10 @@ export type PlaybackState =
 export interface Vega {
   /**
    * Load a media source for playback.
-   * @param source - URL string, File, or Blob containing the media
+   * @param source - Supported media input source
    * @returns Promise resolving to media information
    */
-  load(source: string | File | Blob): Promise<MediaInfo>;
+  load(source: MediaInput): Promise<MediaInfo>;
 
   /**
    * Start or resume playback.
@@ -218,16 +208,10 @@ export interface Vega {
    */
   setMuted(muted: boolean): void;
 
-  /**
-   * Set or replace the VideoFrame adapter.
-   * @param adapter - New adapter or null to remove
-   */
-  setAdapter(adapter: VideoFrameAdapter | null): void;
-
-  /**
-   * Get the current VideoFrame adapter.
-   */
-  getAdapter(): VideoFrameAdapter | null;
+  /** Add a transform stage to the frame processing pipeline. */
+  pipeThrough(transform: TransformStream<VideoFrame, VideoFrame>): void;
+  /** Clear all transform stages from the frame processing pipeline. */
+  clearPipeline(): void;
 
   /**
    * Register an event listener.
