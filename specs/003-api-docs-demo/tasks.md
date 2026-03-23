@@ -17,9 +17,9 @@
 
 **Purpose**: Create the root-level monorepo configuration files that all workspaces depend on.
 
-- [ ] T001 Create `pnpm-workspace.yaml` at repo root declaring `packages/*` and `apps/*` workspaces
-- [ ] T002 Create `turbo.json` at repo root with Turborepo v2 `"tasks"` config (build, lint, format, format:check, typecheck, test, dev, clean, release)
-- [ ] T003 Update root `package.json` — set `"private": true`, `"packageManager": "pnpm@10.8.1"`, add turbo scripts delegating to `turbo run`, move orchestration-only devDependencies (turbo, husky, commitlint)
+- [x] T001 Create `pnpm-workspace.yaml` at repo root declaring `packages/*` and `apps/*` workspaces
+- [x] T002 Create `turbo.json` at repo root with Turborepo v2 `"tasks"` config (build, lint, format, format:check, typecheck, test, dev, clean, release)
+- [x] T003 Update root `package.json` — set `"private": true`, `"packageManager": "pnpm@10.8.1"`, add turbo scripts delegating to `turbo run`, move orchestration-only devDependencies (turbo, husky, commitlint)
 
 ---
 
@@ -31,39 +31,39 @@
 
 ### Config Packages
 
-- [ ] T004 [P] Create `packages/tsconfig/package.json` — `"name": "@gyeonghokim/tsconfig"`, `"private": true`, `"type": "module"`, exports for `base.json`, `library.json`, `lit-app.json`, `vitepress.json`
-- [ ] T005 [P] Create `packages/tsconfig/base.json` — common strict options: `strict`, `skipLibCheck`, `isolatedModules`, `esModuleInterop`, `forceConsistentCasingInFileNames`, `verbatimModuleSyntax`, `resolveJsonModule`
-- [ ] T006 Create `packages/tsconfig/library.json` — extends `./base.json`; `target: "ES2020"`, `module: "NodeNext"`, `moduleResolution: "NodeNext"`, `declaration: true`, `declarationMap: true`, `sourceMap: true`, `lib: ["ES2020", "DOM", "DOM.Iterable"]`
-- [ ] T007 [P] Create `packages/tsconfig/lit-app.json` — extends `./base.json`; `target: "ES2023"`, `module: "ESNext"`, `moduleResolution: "bundler"`, `experimentalDecorators: true`, `useDefineForClassFields: false`, `noEmit: true`, `lib: ["ES2023", "DOM", "DOM.Iterable"]`
-- [ ] T008 [P] Create `packages/tsconfig/vitepress.json` — extends `./base.json`; `target: "ES2022"`, `module: "ESNext"`, `moduleResolution: "bundler"`, `noEmit: true`, `lib: ["ES2022", "DOM", "DOM.Iterable"]`
-- [ ] T009 [P] Create `packages/biome-config/package.json` — `"name": "@gyeonghokim/biome-config"`, `"private": true`, `"type": "module"`, exports for `library.json`, `lit-app.json`, `vitepress.json`
-- [ ] T010 [P] Create `packages/biome-config/library.json` — recommended rules, formatter (space indent, 100 line width), organize imports, file includes/excludes matching current `biome.json`
-- [ ] T011 [P] Create `packages/biome-config/lit-app.json` — extend library defaults; add Lit-specific overrides (decorator patterns, web component naming conventions)
-- [ ] T012 [P] Create `packages/biome-config/vitepress.json` — extend library defaults; add VitePress/markdown-adjacent file handling overrides
+- [x] T004 [P] Create `packages/tsconfig/package.json` — `"name": "@gyeonghokim/tsconfig"`, `"private": true`, `"type": "module"`, exports for `base.json`, `library.json`, `lit-app.json`, `vitepress.json`
+- [x] T005 [P] Create `packages/tsconfig/base.json` — common strict options: `strict`, `skipLibCheck`, `isolatedModules`, `esModuleInterop`, `forceConsistentCasingInFileNames`, `verbatimModuleSyntax`, `resolveJsonModule`
+- [x] T006 Create `packages/tsconfig/library.json` — extends `./base.json`; `target: "ES2020"`, `module: "NodeNext"`, `moduleResolution: "NodeNext"`, `declaration: true`, `declarationMap: true`, `sourceMap: true`, `lib: ["ES2020", "DOM", "DOM.Iterable"]`
+- [x] T007 [P] Create `packages/tsconfig/lit-app.json` — extends `./base.json`; `target: "ES2023"`, `module: "ESNext"`, `moduleResolution: "bundler"`, `experimentalDecorators: true`, `useDefineForClassFields: false`, `noEmit: true`, `lib: ["ES2023", "DOM", "DOM.Iterable"]`
+- [x] T008 [P] Create `packages/tsconfig/vitepress.json` — extends `./base.json`; `target: "ES2022"`, `module: "ESNext"`, `moduleResolution: "bundler"`, `noEmit: true`, `lib: ["ES2022", "DOM", "DOM.Iterable"]`
+- [x] T009 [P] Create `packages/biome-config/package.json` — `"name": "@gyeonghokim/biome-config"`, `"private": true`, `"type": "module"`, exports for `library.json`, `lit-app.json`, `vitepress.json`
+- [x] T010 [P] Create `packages/biome-config/library.json` — recommended rules, formatter (space indent, 100 line width), organize imports, file includes/excludes matching current `biome.json`
+- [x] T011 [P] Create `packages/biome-config/lit-app.json` — extend library defaults; add Lit-specific overrides (decorator patterns, web component naming conventions)
+- [x] T012 [P] Create `packages/biome-config/vitepress.json` — extend library defaults; add VitePress/markdown-adjacent file handling overrides
 
 ### Library Migration
 
-- [ ] T013 Create `packages/vega/` directory and move `src/`, `tests/`, `dist/`, `vite-env.d.ts` from repo root
-- [ ] T014 Move `vite.config.ts` to `packages/vega/vite.config.ts` and update `entry` path to `resolve(__dirname, "src/index.ts")`
-- [ ] T015 Move `vitest.config.ts` to `packages/vega/vitest.config.ts` and update `include` path to `["tests/**/*.test.ts"]`
-- [ ] T016 Move `tsconfig.build.json` to `packages/vega/tsconfig.build.json` and update `extends` to reference `@gyeonghokim/tsconfig/library.json`
-- [ ] T017 Update `packages/vega/package.json` — add `@gyeonghokim/tsconfig` and `@gyeonghokim/biome-config` as `workspace:*` devDependencies; keep all existing deps; adjust scripts if paths changed
-- [ ] T018 Create `packages/vega/tsconfig.json` — `extends: "@gyeonghokim/tsconfig/library.json"`, add `types: ["@webgpu/types", "vite/client"]`, set `rootDir: "src"`, `include: ["src/**/*"]`, `exclude: ["node_modules", "dist", "tests"]`
-- [ ] T019 Create `packages/vega/biome.json` — extends `@gyeonghokim/biome-config/library.json`
-- [ ] T020 Move `.releaserc.json` to `packages/vega/.releaserc.json` and switch `@semantic-release/npm` to `@anolilab/semantic-release-pnpm`; add `@anolilab/semantic-release-pnpm` as devDependency
+- [x] T013 Create `packages/vega/` directory and move `src/`, `tests/`, `dist/`, `vite-env.d.ts` from repo root
+- [x] T014 Move `vite.config.ts` to `packages/vega/vite.config.ts` and update `entry` path to `resolve(__dirname, "src/index.ts")`
+- [x] T015 Move `vitest.config.ts` to `packages/vega/vitest.config.ts` and update `include` path to `["tests/**/*.test.ts"]`
+- [x] T016 Move `tsconfig.build.json` to `packages/vega/tsconfig.build.json` and update `extends` to reference `@gyeonghokim/tsconfig/library.json`
+- [x] T017 Update `packages/vega/package.json` — add `@gyeonghokim/tsconfig` and `@gyeonghokim/biome-config` as `workspace:*` devDependencies; keep all existing deps; adjust scripts if paths changed
+- [x] T018 Create `packages/vega/tsconfig.json` — `extends: "@gyeonghokim/tsconfig/library.json"`, add `types: ["@webgpu/types", "vite/client"]`, set `rootDir: "src"`, `include: ["src/**/*"]`, `exclude: ["node_modules", "dist", "tests"]`
+- [x] T019 Create `packages/vega/biome.json` — extends `@gyeonghokim/biome-config/library.json`
+- [x] T020 Move `.releaserc.json` to `packages/vega/.releaserc.json` and switch `@semantic-release/npm` to `@anolilab/semantic-release-pnpm`; add `@anolilab/semantic-release-pnpm` as devDependency
 
 ### Root Cleanup & Tooling
 
-- [ ] T021 Remove root `tsconfig.json` and root `biome.json` (replaced by config packages)
-- [ ] T022 Replace root `README.md` with symlink: `ln -sf packages/vega/README.md README.md`
-- [ ] T023 Update `.husky/commit-msg` — change `npx` to `pnpm dlx commitlint --edit $1`
-- [ ] T024 [P] Update `.husky/pre-commit` — change to `pnpm turbo run lint format:check typecheck`
-- [ ] T025 [P] Update `.husky/pre-push` — change to `pnpm turbo run test`
-- [ ] T026 Update `.github/workflows/release.yml` — add `pnpm/action-setup@v4`, change `npm clean-install` to `pnpm install --frozen-lockfile`, change build/release commands to use turbo and `pnpm --filter @gyeonghokim/vega exec semantic-release`
-- [ ] T027 Remove `package-lock.json`, run `pnpm install`, verify `pnpm-lock.yaml` is generated
-- [ ] T028 Verify: `pnpm build` builds `packages/vega` successfully
-- [ ] T029 Verify: `pnpm test` runs existing tests in `packages/vega` successfully
-- [ ] T030 Verify: `pnpm lint` and `pnpm typecheck` pass across all workspaces
+- [x] T021 Remove root `tsconfig.json` and root `biome.json` (replaced by config packages)
+- [x] T022 Replace root `README.md` with symlink: `ln -sf packages/vega/README.md README.md`
+- [x] T023 Update `.husky/commit-msg` — change `npx` to `pnpm dlx commitlint --edit $1`
+- [x] T024 [P] Update `.husky/pre-commit` — change to `pnpm turbo run lint format:check typecheck`
+- [x] T025 [P] Update `.husky/pre-push` — change to `pnpm turbo run test`
+- [x] T026 Update `.github/workflows/release.yml` — add `pnpm/action-setup@v4`, change `npm clean-install` to `pnpm install --frozen-lockfile`, change build/release commands to use turbo and `pnpm --filter @gyeonghokim/vega exec semantic-release`
+- [x] T027 Remove `package-lock.json`, run `pnpm install`, verify `pnpm-lock.yaml` is generated
+- [x] T028 Verify: `pnpm build` builds `packages/vega` successfully
+- [x] T029 Verify: `pnpm test` runs existing tests in `packages/vega` successfully
+- [x] T030 Verify: `pnpm lint` and `pnpm typecheck` pass across all workspaces
 
 **Checkpoint**: Monorepo structure is complete. Library builds, tests, and lints identically to pre-migration. User story implementation can begin.
 
@@ -77,16 +77,16 @@
 
 ### Implementation for User Story 1
 
-- [ ] T031 [US1] Create `apps/doc/package.json` — `"name": "@gyeonghokim/vega-doc"`, `"private": true`, devDependencies: `vitepress@^1.6.4`, `typedoc@^0.28.17`, `typedoc-plugin-markdown@^4.10.0`, `typedoc-vitepress-theme@^1.1.2`, `typescript@^5.9.3`, `@gyeonghokim/vega: "workspace:*"`, `@gyeonghokim/tsconfig: "workspace:*"`, `@gyeonghokim/biome-config: "workspace:*"`; scripts: `typedoc`, `dev: "npm run typedoc && vitepress dev"`, `build: "npm run typedoc && vitepress build"`, `preview: "vitepress preview"`
-- [ ] T032 [P] [US1] Create `apps/doc/tsconfig.json` — extends `@gyeonghokim/tsconfig/vitepress.json`, add `types: ["vite/client"]`
-- [ ] T033 [P] [US1] Create `apps/doc/biome.json` — extends `@gyeonghokim/biome-config/vitepress.json`
-- [ ] T034 [US1] Create `apps/doc/typedoc.json` — `entryPoints: ["../../packages/vega/src/index.ts"]`, `tsconfig: "../../packages/vega/tsconfig.json"`, `plugin: ["typedoc-plugin-markdown", "typedoc-vitepress-theme"]`, `out: "./api"`, `readme: "none"`, format options (table for params/interfaces/enums, useCodeBlocks, useHTMLEncodedBrackets), sidebar autoConfiguration; configure `excludeInternal: true` to strip `@internal`-tagged symbols and `"visibilityFilters": { "inherited": true, "@alpha": false }` to hide experimental APIs from the public reference (FR-002)
-- [ ] T035 [US1] Create `apps/doc/.vitepress/config.mts` — title "Vega", multi-sidebar (`/guide/` + `/api/`), nav (Guide, API Reference, version dropdown reading `package.json`), local search, social links (GitHub), footer, import `typedoc-sidebar.json` for API sidebar
-- [ ] T036 [US1] Create `apps/doc/index.md` — VitePress home layout with hero (title "Vega", tagline "WebCodecs Video Player"), action buttons (Get Started → `/guide/getting-started`, API Reference → `/api/`), feature cards (WebCodecs Native, Custom Frame Processing, Tiny Footprint)
-- [ ] T037 [US1] Create `apps/doc/.gitignore` — ignore `api/` generated directory and `.vitepress/cache/`, `.vitepress/dist/`
-- [ ] T038 [US1] Create `apps/doc/vercel.json` — `buildCommand: "turbo build"`, `outputDirectory: ".vitepress/dist"`, immutable cache headers for `/assets/`
-- [ ] T039 [US1] Run `pnpm install` to link workspace dependencies, then verify: `pnpm --filter @gyeonghokim/vega-doc run typedoc` generates `apps/doc/api/` markdown from library source
-- [ ] T040 [US1] Verify: `pnpm --filter @gyeonghokim/vega-doc dev` serves docs site with navigable API reference; public symbols reachable within 3 clicks from API index (SC-001); version badge shows in nav (FR-009)
+- [x] T031 [US1] Create `apps/doc/package.json` — `"name": "@gyeonghokim/vega-doc"`, `"private": true`, devDependencies: `vitepress@^1.6.4`, `typedoc@^0.28.17`, `typedoc-plugin-markdown@^4.10.0`, `typedoc-vitepress-theme@^1.1.2`, `typescript@^5.9.3`, `@gyeonghokim/vega: "workspace:*"`, `@gyeonghokim/tsconfig: "workspace:*"`, `@gyeonghokim/biome-config: "workspace:*"`; scripts: `typedoc`, `dev: "npm run typedoc && vitepress dev"`, `build: "npm run typedoc && vitepress build"`, `preview: "vitepress preview"`
+- [x] T032 [P] [US1] Create `apps/doc/tsconfig.json` — extends `@gyeonghokim/tsconfig/vitepress.json`, add `types: ["vite/client"]`
+- [x] T033 [P] [US1] Create `apps/doc/biome.json` — extends `@gyeonghokim/biome-config/vitepress.json`
+- [x] T034 [US1] Create `apps/doc/typedoc.json` — `entryPoints: ["../../packages/vega/src/index.ts"]`, `tsconfig: "../../packages/vega/tsconfig.json"`, `plugin: ["typedoc-plugin-markdown", "typedoc-vitepress-theme"]`, `out: "./api"`, `readme: "none"`, format options (table for params/interfaces/enums, useCodeBlocks, useHTMLEncodedBrackets), sidebar autoConfiguration; configure `excludeInternal: true` to strip `@internal`-tagged symbols and `"visibilityFilters": { "inherited": true, "@alpha": false }` to hide experimental APIs from the public reference (FR-002)
+- [x] T035 [US1] Create `apps/doc/.vitepress/config.mts` — title "Vega", multi-sidebar (`/guide/` + `/api/`), nav (Guide, API Reference, version dropdown reading `package.json`), local search, social links (GitHub), footer, import `typedoc-sidebar.json` for API sidebar
+- [x] T036 [US1] Create `apps/doc/index.md` — VitePress home layout with hero (title "Vega", tagline "WebCodecs Video Player"), action buttons (Get Started → `/guide/getting-started`, API Reference → `/api/`), feature cards (WebCodecs Native, Custom Frame Processing, Tiny Footprint)
+- [x] T037 [US1] Create `apps/doc/.gitignore` — ignore `api/` generated directory and `.vitepress/cache/`, `.vitepress/dist/`
+- [x] T038 [US1] Create `apps/doc/vercel.json` — `buildCommand: "turbo build"`, `outputDirectory: ".vitepress/dist"`, immutable cache headers for `/assets/`
+- [x] T039 [US1] Run `pnpm install` to link workspace dependencies, then verify: `pnpm --filter @gyeonghokim/vega-doc run typedoc` generates `apps/doc/api/` markdown from library source
+- [x] T040 [US1] Verify: `pnpm --filter @gyeonghokim/vega-doc dev` serves docs site with navigable API reference; public symbols reachable within 3 clicks from API index (SC-001); version badge shows in nav (FR-009)
 
 **Checkpoint**: API reference is functional with Vercel deployment config — public symbols documented with navigation and search (FR-001, FR-002, SC-001).
 
@@ -100,10 +100,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T041 [US2] Write `apps/doc/guide/what-is-vega.md` — overview of the library (WebCodecs-based video playback, custom frame processing), architecture at a glance, link to API reference
-- [ ] T042 [US2] Write `apps/doc/guide/getting-started.md` — installation (npm/pnpm code group), quick start code example (createVega, canvas, play), browser requirements table (Chrome 94+, Edge 94+, Safari 16.4+, Firefox 130+), environment prerequisites (secure context, WebCodecs), common failure troubleshooting (unsupported format, CORS, autoplay), links to API reference and demo (FR-003, FR-004)
-- [ ] T043 [US2] Update `apps/doc/.vitepress/config.mts` sidebar `/guide/` section — add entries for "What is Vega?" and "Getting Started" pages
-- [ ] T044 [US2] Verify: `pnpm --filter @gyeonghokim/vega-doc dev` serves guide pages; getting-started renders install instructions, code example, browser table, and troubleshooting section; links to API reference work (FR-003, FR-004, SC-002)
+- [x] T041 [US2] Write `apps/doc/guide/what-is-vega.md` — overview of the library (WebCodecs-based video playback, custom frame processing), architecture at a glance, link to API reference
+- [x] T042 [US2] Write `apps/doc/guide/getting-started.md` — installation (npm/pnpm code group), quick start code example (createVega, canvas, play), browser requirements table (Chrome 94+, Edge 94+, Safari 16.4+, Firefox 130+), environment prerequisites (secure context, WebCodecs), common failure troubleshooting (unsupported format, CORS, autoplay), links to API reference and demo (FR-003, FR-004)
+- [x] T043 [US2] Update `apps/doc/.vitepress/config.mts` sidebar `/guide/` section — add entries for "What is Vega?" and "Getting Started" pages
+- [x] T044 [US2] Verify: `pnpm --filter @gyeonghokim/vega-doc dev` serves guide pages; getting-started renders install instructions, code example, browser table, and troubleshooting section; links to API reference work (FR-003, FR-004, SC-002)
 
 **Checkpoint**: Getting-started guide is complete — new integrators can reach first success following the documented path.
 
@@ -117,18 +117,18 @@
 
 ### Implementation for User Story 3
 
-- [ ] T045 [US3] Create `apps/demo/package.json` — `"name": "@gyeonghokim/vega-demo"`, `"private": true`, dependencies: `lit@^3.3.2`, `@gyeonghokim/vega: "workspace:*"`, devDependencies: `vite@^7.3.1`, `typescript@^5.9.3`, `@gyeonghokim/tsconfig: "workspace:*"`, `@gyeonghokim/biome-config: "workspace:*"`; scripts: `dev`, `build`, `preview`
-- [ ] T046 [P] [US3] Create `apps/demo/tsconfig.json` — extends `@gyeonghokim/tsconfig/lit-app.json`, add `types: ["vite/client"]`
-- [ ] T047 [P] [US3] Create `apps/demo/biome.json` — extends `@gyeonghokim/biome-config/lit-app.json`
-- [ ] T048 [US3] Create `apps/demo/vite.config.ts` — dev server port 3000 with COOP/COEP headers, build target es2023, `resolve.dedupe: ["lit"]`, output to `dist/`
-- [ ] T049 [US3] Create `apps/demo/index.html` — semantic HTML (header, main, footer), `<h1>Vega Player Demo</h1>`, URL input with label, file upload input with label, `<vega-player>` custom element, `<script type="module" src="/src/index.ts">`, `color-scheme: light dark` CSS, centered layout
-- [ ] T050 [US3] Implement `apps/demo/src/vega-player.ts` — Lit `@customElement("vega-player")` with: `@property src` (video URL), `@state _state/_currentTime/_duration/_error/_webCodecsSupported`, `@query("canvas")`, canvas + controls (play/pause button, range seek, time display), WebCodecs detection in `connectedCallback`, error banner with `role="alert"` mapping error codes to messages (FR-006, FR-007), CSS with Shadow DOM isolation
-- [ ] T051 [US3] Create `apps/demo/src/index.ts` — import `vega-player.ts`, wire URL input `change` → set `player.src`, wire file input `change` → call `player.handleFileSelect(e)`
-- [ ] T052 [US3] Add sample media file to `apps/demo/public/` (small MP4, < 5MB, H.264 baseline for broad WebCodecs support)
-- [ ] T053 [US3] Create `apps/demo/vercel.json` — `buildCommand: "turbo build"`, `outputDirectory: "dist"`, SPA rewrite rule `/(.*) → /index.html`
-- [ ] T054 [US3] Run `pnpm install` to link workspace dependencies, then verify: `pnpm --filter @gyeonghokim/vega-demo dev` serves demo at localhost:3000
-- [ ] T055 [US3] Verify: demo loads sample media, play/pause works, seek slider updates, time displays correctly (FR-005, FR-006, SC-003)
-- [ ] T056 [US3] Verify: error states — load invalid file shows error banner, unsupported browser shows capability warning banner (FR-007, SC-004)
+- [x] T045 [US3] Create `apps/demo/package.json` — `"name": "@gyeonghokim/vega-demo"`, `"private": true`, dependencies: `lit@^3.3.2`, `@gyeonghokim/vega: "workspace:*"`, devDependencies: `vite@^7.3.1`, `typescript@^5.9.3`, `@gyeonghokim/tsconfig: "workspace:*"`, `@gyeonghokim/biome-config: "workspace:*"`; scripts: `dev`, `build`, `preview`
+- [x] T046 [P] [US3] Create `apps/demo/tsconfig.json` — extends `@gyeonghokim/tsconfig/lit-app.json`, add `types: ["vite/client"]`
+- [x] T047 [P] [US3] Create `apps/demo/biome.json` — extends `@gyeonghokim/biome-config/lit-app.json`
+- [x] T048 [US3] Create `apps/demo/vite.config.ts` — dev server port 3000 with COOP/COEP headers, build target es2023, `resolve.dedupe: ["lit"]`, output to `dist/`
+- [x] T049 [US3] Create `apps/demo/index.html` — semantic HTML (header, main, footer), `<h1>Vega Player Demo</h1>`, URL input with label, file upload input with label, `<vega-player>` custom element, `<script type="module" src="/src/index.ts">`, `color-scheme: light dark` CSS, centered layout
+- [x] T050 [US3] Implement `apps/demo/src/vega-player.ts` — Lit `@customElement("vega-player")` with: `@property src` (video URL), `@state _state/_currentTime/_duration/_error/_webCodecsSupported`, `@query("canvas")`, canvas + controls (play/pause button, range seek, time display), WebCodecs detection in `connectedCallback`, error banner with `role="alert"` mapping error codes to messages (FR-006, FR-007), CSS with Shadow DOM isolation
+- [x] T051 [US3] Create `apps/demo/src/index.ts` — import `vega-player.ts`, wire URL input `change` → set `player.src`, wire file input `change` → call `player.handleFileSelect(e)`
+- [x] T052 [US3] Add sample media file to `apps/demo/public/` (small MP4, < 5MB, H.264 baseline for broad WebCodecs support)
+- [x] T053 [US3] Create `apps/demo/vercel.json` — `buildCommand: "turbo build"`, `outputDirectory: "dist"`, SPA rewrite rule `/(.*) → /index.html`
+- [x] T054 [US3] Run `pnpm install` to link workspace dependencies, then verify: `pnpm --filter @gyeonghokim/vega-demo dev` serves demo at localhost:3000
+- [x] T055 [US3] Verify: demo loads sample media, play/pause works, seek slider updates, time displays correctly (FR-005, FR-006, SC-003)
+- [x] T056 [US3] Verify: error states — load invalid file shows error banner, unsupported browser shows capability warning banner (FR-007, SC-004)
 
 **Checkpoint**: Live demo is functional — video playback with controls, error handling, and clear labels.
 
@@ -140,25 +140,25 @@
 
 ### CI/CD & Deployment
 
-- [ ] T057 Verify `.github/workflows/release.yml` runs end-to-end: `pnpm install → turbo build → turbo test → semantic-release` in CI context
-- [ ] T058 Run `pnpm build` from root — verify all 5 workspaces resolve correctly and Turborepo task graph executes: tsconfig → biome-config → vega → demo + doc in parallel
+- [x] T057 Verify `.github/workflows/release.yml` runs end-to-end: `pnpm install → turbo build → turbo test → semantic-release` in CI context
+- [x] T058 Run `pnpm build` from root — verify all 5 workspaces resolve correctly and Turborepo task graph executes: tsconfig → biome-config → vega → demo + doc in parallel
 
 ### Cross-Navigation (FR-008, SC-005)
 
-- [ ] T059 [P] Add link to demo page in `apps/doc/.vitepress/config.mts` nav (e.g., `{ text: "Live Demo", link: "https://vega-demo.vercel.app" }`)
-- [ ] T060 [P] Add link to demo in `apps/doc/guide/getting-started.md` (e.g., "Try the [live demo](https://vega-demo.vercel.app) to see Vega in action")
-- [ ] T061 [P] Add link to docs and GitHub in `apps/demo/index.html` footer (e.g., `<a href="https://vega-doc.vercel.app">Documentation</a>`, `<a href="https://github.com/GyeongHoKim/vega">GitHub</a>`)
-- [ ] T062 Verify: from docs, user reaches demo in one click; from demo, user reaches docs in one click (SC-005)
+- [x] T059 [P] Add link to demo page in `apps/doc/.vitepress/config.mts` nav (e.g., `{ text: "Live Demo", link: "https://vega-demo.vercel.app" }`)
+- [x] T060 [P] Add link to demo in `apps/doc/guide/getting-started.md` (e.g., "Try the [live demo](https://vega-demo.vercel.app) to see Vega in action")
+- [x] T061 [P] Add link to docs and GitHub in `apps/demo/index.html` footer (e.g., `<a href="https://vega-doc.vercel.app">Documentation</a>`, `<a href="https://github.com/GyeongHoKim/vega">GitHub</a>`)
+- [x] T062 Verify: from docs, user reaches demo in one click; from demo, user reaches docs in one click (SC-005)
 
 ### Final Validation
 
-- [ ] T063 Run `pnpm lint`, `pnpm format:check`, `pnpm typecheck` — all workspaces pass
-- [ ] T064 Run `pnpm test` — existing library tests pass in `packages/vega`
-- [ ] T065 Validate quickstart.md steps: clone → install → build → dev servers for demo and doc both work
-- [ ] T066 Verify SC-001: every public symbol in API index reachable within 3 navigational steps
-- [ ] T067 Verify SC-002: getting-started path completable in under 30 minutes by non-contributor
-- [ ] T068 Verify SC-003: demo completes primary flow in under 2 minutes from page load
-- [ ] T069 Verify SC-004: all demo error cases show visible, non-empty messages (no silent failures)
+- [x] T063 Run `pnpm lint`, `pnpm format:check`, `pnpm typecheck` — all workspaces pass
+- [x] T064 Run `pnpm test` — existing library tests pass in `packages/vega`
+- [x] T065 Validate quickstart.md steps: clone → install → build → dev servers for demo and doc both work
+- [x] T066 Verify SC-001: every public symbol in API index reachable within 3 navigational steps
+- [x] T067 Verify SC-002: getting-started path completable in under 30 minutes by non-contributor
+- [x] T068 Verify SC-003: demo completes primary flow in under 2 minutes from page load
+- [x] T069 Verify SC-004: all demo error cases show visible, non-empty messages (no silent failures)
 
 ---
 
