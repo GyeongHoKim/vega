@@ -2,7 +2,7 @@
  * Vega - WebCodecs-based Video Player
  *
  * A lightweight video player that uses WebCodecs API for decoding
- * and allows custom VideoFrame processing through adapters.
+ * and allows custom VideoFrame processing through transform streams.
  */
 
 // ============ Public API - Vega Player ============
@@ -11,7 +11,7 @@ export { createVega } from "./vega.js";
 export type {
   Vega,
   VegaOptions,
-  VideoFrameAdapter,
+  MediaInput,
   MediaInfo,
   VideoTrackInfo,
   AudioTrackInfo,
