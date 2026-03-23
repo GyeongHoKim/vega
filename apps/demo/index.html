@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vega Player Demo</title>
+    <meta name="color-scheme" content="light dark" />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        font-family: system-ui, sans-serif;
+      }
+      header,
+      main,
+      footer {
+        padding: 1rem 1.25rem;
+      }
+      main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .inputs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+        justify-content: center;
+        max-width: 960px;
+        width: 100%;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        font-size: 0.9rem;
+      }
+      input[type="url"],
+      input[type="file"] {
+        min-width: min(100%, 320px);
+      }
+      footer {
+        text-align: center;
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+      footer a {
+        margin: 0 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Vega Player Demo</h1>
+      <p>Load a sample, paste a URL, or choose a local file. Requires WebCodecs and a secure context.</p>
+    </header>
+    <main>
+      <div class="inputs">
+        <label>
+          Video URL
+          <input id="url" type="url" placeholder="https://…" autocomplete="off" />
+        </label>
+        <label>
+          Local file
+          <input id="file" type="file" accept="video/*,.mp4" />
+        </label>
+      </div>
+      <vega-player id="player" src="/sample.mp4"></vega-player>
+    </main>
+    <footer>
+      <a href="https://vega-doc.vercel.app">Documentation</a>
+      <a href="https://github.com/GyeongHoKim/vega">GitHub</a>
+    </footer>
+    <script type="module" src="/src/index.ts"></script>
+  </body>
+</html>

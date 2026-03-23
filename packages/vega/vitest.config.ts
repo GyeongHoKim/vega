@@ -1,0 +1,25 @@
+import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
+
+export default defineConfig({
+  test: {
+    browser: {
+      enabled: true,
+      provider: playwright({
+        launchOptions: {
+          args: [
+            "--enable-unsafe-swiftshader",
+            "--use-angle=swiftshader",
+            "--ignore-gpu-blocklist",
+          ],
+        },
+      }),
+      instances: [{ browser: "chromium" }],
+      headless: true,
+    },
+    include: ["tests/**/*.test.ts"],
+    environment: "node",
+    globals: true,
+  },
+  assetsInclude: ["**/*.raw"],
+});

@@ -1,0 +1,10 @@
+{
+  "name": "@gyeonghokim/biome-config",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./library.json": "./library.json",
+    "./lit-app.json": "./lit-app.json",
+    "./vitepress.json": "./vitepress.json"
+  }
+}
