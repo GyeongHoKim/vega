@@ -1,65 +1,28 @@
 {
-  "name": "@gyeonghokim/vega",
-  "version": "0.0.0",
-  "description": "WebCodecs-based Video Player with Custom Frame Processing",
-  "author": "GyeongHo Kim",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/GyeongHoKim/vega.git"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "tag": "latest",
-    "access": "public",
-    "provenance": true
-  },
-  "bugs": {
-    "url": "https://github.com/GyeongHoKim/vega/issues"
-  },
-  "homepage": "https://github.com/GyeongHoKim/vega#readme",
-  "type": "module",
-  "main": "./dist/vega.umd.cjs",
-  "module": "./dist/vega.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/vega.js",
-      "require": "./dist/vega.umd.cjs"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "name": "vega-monorepo",
+  "private": true,
+  "packageManager": "pnpm@10.8.1",
   "scripts": {
-    "format": "biome format --write .",
-    "format:check": "biome format .",
-    "lint": "biome lint .",
-    "typecheck": "tsc --noEmit && npm run build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "build": "vite build && tsc -p tsconfig.build.json",
-    "prepare": "husky",
-    "release": "semantic-release"
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "dev": "turbo run dev",
+    "clean": "turbo run clean",
+    "release": "turbo run release",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.14",
+    "@gyeonghokim/biome-config": "workspace:*",
     "@commitlint/cli": "20.4.1",
     "@commitlint/config-conventional": "20.4.1",
-    "@vitest/browser": "4.0.18",
-    "@vitest/browser-playwright": "4.0.18",
-    "@webgpu/types": "^0.1.69",
     "husky": "9.1.7",
-    "semantic-release": "25.0.3",
-    "typescript": "5.9.3",
-    "vite": "7.3.1",
-    "vitest": "4.0.18"
+    "turbo": "^2.7.0"
   },
   "engines": {
     "node": ">=24"
-  },
-  "dependencies": {
-    "mediabunny": "^1.40.0"
   }
 }
