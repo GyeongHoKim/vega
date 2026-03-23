@@ -1,15 +1,20 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.14/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
   "extends": ["./library.json"],
   "files": {
     "includes": [
       "**",
       "!**/node_modules",
-      "!**/dist",
+      "!!dist",
+      "!!**/dist",
+      "!**/.turbo",
       "!**/coverage",
-      "!**/.vitepress/dist",
-      "!**/.vitepress/cache",
-      "!**/api"
+      "!**/*.min.js",
+      "!**/fixtures",
+      "!!**/.vitepress/dist",
+      "!!**/.vitepress/cache",
+      "!!**/.vitepress/.temp",
+      "!!**/api"
     ]
   },
   "overrides": [

@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@gyeonghokim/vega-demo",
-  "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+	"buildCommand": "cd ../.. && pnpm exec turbo run build --filter=@gyeonghokim/vega-demo",
+	"outputDirectory": "dist",
+	"rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

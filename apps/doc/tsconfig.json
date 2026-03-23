@@ -1,7 +1,11 @@
 {
-  "extends": "@gyeonghokim/tsconfig/vitepress.json",
-  "compilerOptions": {
-    "types": ["vite/client"]
-  },
-  "include": [".vitepress/**/*.ts", ".vitepress/**/*.mts", ".vitepress/**/*.vue"]
+	"extends": "@gyeonghokim/tsconfig/vitepress.json",
+	"compilerOptions": {
+		"types": ["vite/client"]
+	},
+	"include": [
+		".vitepress/**/*.ts",
+		".vitepress/**/*.mts",
+		".vitepress/**/*.vue"
+	]
 }

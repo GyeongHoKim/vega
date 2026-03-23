@@ -10,7 +10,8 @@ export default defineConfig({
       formats: ["es", "umd"],
     },
     sourcemap: true,
-    rollupOptions: {
+    // Vite 8: https://vite.dev/guide/migration — `rollupOptions` → `rolldownOptions`
+    rolldownOptions: {
       output: {
         globals: {
           // Add any external dependencies here if needed

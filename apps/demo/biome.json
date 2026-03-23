@@ -1,0 +1,10 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.4.8/schema.json",
+	"extends": ["@gyeonghokim/biome-config/lit-app.json"],
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true,
+		"root": "../.."
+	}
+}
