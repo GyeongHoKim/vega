@@ -1,0 +1,11 @@
+{
+  "name": "@gyeonghokim/tsconfig",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base.json": "./base.json",
+    "./library.json": "./library.json",
+    "./lit-app.json": "./lit-app.json",
+    "./vitepress.json": "./vitepress.json"
+  }
+}
