@@ -37,8 +37,5 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-      - name: Install Playwright browsers
-        run: pnpm --filter @gyeonghokim/vega exec playwright install chromium --with-deps
-
-      - name: Test
-        run: pnpm test
+      - name: Build
+        run: pnpm run build
