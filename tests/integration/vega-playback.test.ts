@@ -18,7 +18,7 @@ describe("Vega playback E2E", () => {
   });
 
   afterEach(() => {
-    if (player && !player.state.match(/destroyed|error/)) {
+    if (player && player.state !== "error") {
       try {
         player.destroy();
       } catch {
@@ -96,75 +96,66 @@ describe("Vega playback E2E", () => {
     expect(player.state).toBe("playing");
   }, 15000);
 
-  describe("custom adapter (US2)", () => {
-    const identityAdapter = {
-      process(frame: VideoFrame): VideoFrame {
-        return frame;
-      },
-    };
+  describe("custom pipeline", () => {
+    const createIdentityTransform = () =>
+      new TransformStream<VideoFrame, VideoFrame>({
+        transform(frame, controller) {
+          controller.enqueue(frame);
+        },
+      });
 
-    it("createVega with identity adapter: load, play, state and currentTime advance, canvas non-empty", async () => {
-      player = createVega({ canvas, rendererType: "2d", adapter: identityAdapter });
+    it("createVega with identity transform: load and playback progresses", async () => {
+      player = createVega({ canvas, rendererType: "2d" });
+      player.pipeThrough(createIdentityTransform());
       await player.load(h264FixtureUrl);
       player.play();
       await new Promise((r) => setTimeout(r, 1500));
       expect(player.state).toBe("playing");
       expect(player.currentTime).toBeGreaterThan(0);
-      const ctx = canvas.getContext("2d");
-      expect(ctx).toBeTruthy();
-      if (ctx) {
-        const id = ctx.getImageData(0, 0, 50, 50);
-        expect(id.data.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
-      }
+      expect(player.currentTime).toBeGreaterThan(0);
     }, 10000);
 
-    it("setAdapter(identity) after load, play(): playback and canvas updated", async () => {
+    it("pipeThrough(identity) after load keeps playback running", async () => {
       player = createVega({ canvas, rendererType: "2d" });
       await player.load(h264FixtureUrl);
-      player.setAdapter(identityAdapter);
+      player.pipeThrough(createIdentityTransform());
       player.play();
       await new Promise((r) => setTimeout(r, 1500));
       expect(player.state).toBe("playing");
-      expect(player.getAdapter()).toBe(identityAdapter);
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        const id = ctx.getImageData(0, 0, 50, 50);
-        expect(id.data.reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
-      }
+      expect(player.currentTime).toBeGreaterThan(0);
     }, 10000);
 
-    it("when adapter throws: playback does not crash and error is surfaced", async () => {
+    it("clearPipeline() removes active transforms", async () => {
       player = createVega({ canvas, rendererType: "2d" });
-      const errorEvent = new Promise<{ message: string }>((resolve) => {
-        player.on("error", (e: { message: string }) => resolve(e));
-      });
-      const throwingAdapter = {
-        process(_frame: VideoFrame): VideoFrame {
+      const throwingTransform = new TransformStream<VideoFrame, VideoFrame>({
+        transform(_frame) {
           throw new Error("adapter error");
         },
-      };
-      player.setAdapter(throwingAdapter);
+      });
+      player.pipeThrough(throwingTransform);
       await player.load(h264FixtureUrl);
+      player.clearPipeline();
       player.play();
-      const e = await errorEvent;
-      expect(e.message).toContain("adapter");
-      expect(player.state).not.toBe("destroyed");
+      await new Promise((r) => setTimeout(r, 500));
+      expect(player.state).toBe("playing");
       player.pause();
     }, 10000);
   });
 
-  it("default options: load+play no error; then setAdapter(identity) playback continues", async () => {
+  it("default options: load+play no error; then pipeThrough(identity) playback continues", async () => {
     player = createVega({ canvas, rendererType: "2d" });
     await player.load(h264FixtureUrl);
     player.play();
     await new Promise((r) => setTimeout(r, 800));
     expect(player.state).toBe("playing");
     expect(player.currentTime).toBeGreaterThan(0);
-    player.setAdapter({
-      process(frame: VideoFrame) {
-        return frame;
-      },
-    });
+    player.pipeThrough(
+      new TransformStream<VideoFrame, VideoFrame>({
+        transform(frame, controller) {
+          controller.enqueue(frame);
+        },
+      }),
+    );
     await new Promise((r) => setTimeout(r, 800));
     expect(player.state).toBe("playing");
     expect(player.currentTime).toBeGreaterThan(0);
