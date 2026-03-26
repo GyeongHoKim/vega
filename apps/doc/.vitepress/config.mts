@@ -60,7 +60,7 @@ export default defineConfig({
 					},
 				],
 			},
-			{ text: "Live Demo", link: "https://vega-demo.vercel.app" },
+			{ text: "Live Demo", link: "https://vega-demo.gyeongho.dev" },
 		],
 		sidebar: {
 			"/guide/": [

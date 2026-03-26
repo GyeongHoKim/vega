@@ -59,4 +59,4 @@ await player.play();
 ## Next steps
 
 - Explore the full surface in the [API Reference](/api/).
-- Try the [live demo](https://vega-demo.vercel.app) to see playback and controls in the browser.
+- Try the [live demo](https://vega-demo.gyeongho.dev) to see playback and controls in the browser.
