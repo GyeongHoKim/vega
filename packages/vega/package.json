@@ -44,22 +44,22 @@
     "release": "semantic-release"
   },
   "devDependencies": {
-    "@anolilab/semantic-release-pnpm": "^1.0.0",
-    "@biomejs/biome": "2.4.8",
+    "@anolilab/semantic-release-pnpm": "catalog:",
+    "@biomejs/biome": "catalog:",
     "@gyeonghokim/biome-config": "workspace:*",
     "@gyeonghokim/tsconfig": "workspace:*",
-    "@vitest/browser": "4.1.1",
-    "@vitest/browser-playwright": "4.1.1",
+    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
     "@webgpu/types": "^0.1.69",
-    "semantic-release": "25.0.3",
-    "typescript": "5.9.3",
-    "vite": "^8.0.2",
-    "vitest": "4.1.1"
+    "semantic-release": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:vite-app",
+    "vitest": "catalog:"
   },
   "engines": {
     "node": ">=24"
   },
   "dependencies": {
-    "mediabunny": "^1.40.0"
+    "mediabunny": "catalog:"
   }
 }

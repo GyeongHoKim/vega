@@ -15,12 +15,12 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.8",
-    "@commitlint/cli": "20.5.0",
-    "@commitlint/config-conventional": "20.5.0",
+    "@biomejs/biome": "catalog:",
+    "@commitlint/cli": "catalog:",
+    "@commitlint/config-conventional": "catalog:",
     "@gyeonghokim/biome-config": "workspace:*",
-    "husky": "9.1.7",
-    "turbo": "^2.8.20"
+    "husky": "catalog:",
+    "turbo": "catalog:"
   },
   "engines": {
     "node": ">=24"

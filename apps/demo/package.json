@@ -16,10 +16,10 @@
 		"lit": "^3.3.2"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.4.8",
+		"@biomejs/biome": "catalog:",
 		"@gyeonghokim/biome-config": "workspace:*",
 		"@gyeonghokim/tsconfig": "workspace:*",
-		"typescript": "^5.9.3",
-		"vite": "^8.0.2"
+		"typescript": "catalog:",
+		"vite": "catalog:vite-app"
 	}
 }
