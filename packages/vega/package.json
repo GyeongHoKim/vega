@@ -44,6 +44,8 @@
     "release": "semantic-release"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "catalog:",
+    "@semantic-release/git": "catalog:",
     "@anolilab/semantic-release-pnpm": "catalog:",
     "@biomejs/biome": "catalog:",
     "@vitest/browser": "catalog:",

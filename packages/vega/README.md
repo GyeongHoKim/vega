@@ -4,6 +4,11 @@ See more. See better. See Vega
 
 A WebCodecs-based MP4 player powered by mediabunny with **custom VideoFrame processing** via `pipeThrough(TransformStream)`.
 
+## Links
+
+- **Documentation**: [vega.gyeongho.dev](https://vega.gyeongho.dev)
+- **Live demo**: [vega-demo.gyeongho.dev](https://vega-demo.gyeongho.dev)
+
 ## Features
 
 - **WebCodecs API**: Hardware-accelerated video decoding
