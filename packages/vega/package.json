@@ -46,8 +46,6 @@
   "devDependencies": {
     "@anolilab/semantic-release-pnpm": "catalog:",
     "@biomejs/biome": "catalog:",
-    "@gyeonghokim/biome-config": "workspace:*",
-    "@gyeonghokim/tsconfig": "workspace:*",
     "@vitest/browser": "catalog:",
     "@vitest/browser-playwright": "catalog:",
     "@webgpu/types": "^0.1.69",
