@@ -1,0 +1,63 @@
+{
+  "name": "@gyeonghokim/vega",
+  "version": "0.0.0",
+  "description": "WebCodecs-based Video Player with Custom Frame Processing",
+  "author": "GyeongHo Kim",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GyeongHoKim/vega.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "tag": "latest",
+    "access": "public",
+    "provenance": true
+  },
+  "bugs": {
+    "url": "https://github.com/GyeongHoKim/vega/issues"
+  },
+  "homepage": "https://github.com/GyeongHoKim/vega#readme",
+  "type": "module",
+  "main": "./dist/vega.umd.cjs",
+  "module": "./dist/vega.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/vega.js",
+      "require": "./dist/vega.umd.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "biome lint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "vite build && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "release": "semantic-release"
+  },
+  "devDependencies": {
+    "@anolilab/semantic-release-pnpm": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@vitest/browser": "catalog:",
+    "@vitest/browser-playwright": "catalog:",
+    "@webgpu/types": "^0.1.69",
+    "semantic-release": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:vite-app",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "mediabunny": "catalog:"
+  }
+}

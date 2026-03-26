@@ -27,6 +27,9 @@ coverage/
 Thumbs.db
 *.tmp
 
+# Turborepo
+.turbo/
+
 # Biome
 .biome-cache/
 
@@ -34,4 +37,4 @@ Thumbs.db
 test-results/
 playwright-report/
 playwright/.cache/
-tests/integration/__screenshots__/
+**/tests/integration/__screenshots__/

@@ -2,10 +2,10 @@
 Brief description of the change.
 
 ## Checklist
-- [ ] `npm run format` passes
-- [ ] `npm run lint` passes
-- [ ] `npm run typecheck` passes
-- [ ] `npm test` passes
+- [ ] `pnpm run format` passes
+- [ ] `pnpm run lint` passes
+- [ ] `pnpm run typecheck` passes
+- [ ] `pnpm test` passes
 - [ ] Documentation updated if needed
 
 ## Related

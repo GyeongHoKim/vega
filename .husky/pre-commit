@@ -1,1 +1,1 @@
-npm run format
+pnpm turbo run lint format:check typecheck

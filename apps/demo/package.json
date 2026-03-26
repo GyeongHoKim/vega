@@ -1,0 +1,25 @@
+{
+	"name": "@gyeonghokim/vega-demo",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@gyeonghokim/vega": "workspace:*",
+		"lit": "^3.3.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@gyeonghokim/biome-config": "workspace:*",
+		"@gyeonghokim/tsconfig": "workspace:*",
+		"typescript": "catalog:",
+		"vite": "catalog:vite-app"
+	}
+}

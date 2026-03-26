@@ -1,0 +1,27 @@
+{
+	"name": "@gyeonghokim/vega-doc",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"typedoc": "typedoc --options typedoc.json",
+		"dev": "pnpm run typedoc && vitepress dev",
+		"build": "pnpm run typedoc && vitepress build",
+		"preview": "vitepress preview",
+		"lint": "biome lint .",
+		"format": "biome format --write .",
+		"format:check": "biome format .",
+		"typecheck": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@gyeonghokim/biome-config": "workspace:*",
+		"@gyeonghokim/tsconfig": "workspace:*",
+		"@gyeonghokim/vega": "workspace:*",
+		"typedoc": "catalog:",
+		"typedoc-plugin-markdown": "catalog:",
+		"typedoc-vitepress-theme": "catalog:",
+		"typescript": "catalog:",
+		"vite": "catalog:vite-doc",
+		"vitepress": "catalog:"
+	}
+}

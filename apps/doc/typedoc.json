@@ -1,0 +1,21 @@
+{
+	"$schema": "https://typedoc.org/schema.json",
+	"entryPoints": ["../../packages/vega/src/index.ts"],
+	"tsconfig": "../../packages/vega/tsconfig.json",
+	"plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+	"out": "./api",
+	"readme": "none",
+	"excludeInternal": true,
+	"visibilityFilters": {
+		"inherited": true,
+		"@alpha": false
+	},
+	"parametersFormat": "table",
+	"propertyMembersFormat": "table",
+	"enumMembersFormat": "table",
+	"useCodeBlocks": true,
+	"useHTMLEncodedBrackets": true,
+	"sidebar": {
+		"autoConfiguration": true
+	}
+}
